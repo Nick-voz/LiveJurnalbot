@@ -1,7 +1,48 @@
+[tool.black]
+line-length = 88
+experimental-string-processing = true
+
+[tool.isort]
+line_length = 88
+multi_line_output = 3
+force_single_line = true
+
+known_standard_library = [
+]
+
+known_third_party = [
+    "dotenv",
+    "telegram"
+
+]
+known_local_folder = [
+    "src",
+]
+
+sections = ['FUTURE', 'STDLIB', 'THIRDPARTY', 'FIRSTPARTY', 'LOCALFOLDER']
+
+profile = "black"
+
+[tool.pylint]
+disable = [
+    "missing-class-docstring",
+    "import-error",
+    "missing-function-docstring",
+    "too-few-public-methods",
+    "missing-module-docstring",
+    "too-many-instance-attributes",
+]
+
+[tool.pyright]
+typeCheckingMode = "off"
+
 [project]
 name = "livejurnalbot"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "python-dotenv>=1.1.0",
+    "python-telegram-bot>=22.1",
+]

@@ -1,5 +1,8 @@
+from src.bot.run import run_bot
+
+
 def main():
-    print("Hello from livejurnalbot!")
+    run_bot()
 
 
 if __name__ == "__main__":

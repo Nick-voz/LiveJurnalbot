@@ -9,11 +9,13 @@ force_single_line = true
 
 known_standard_library = [
     "os",
+    "typing",
 ]
 
 known_third_party = [
     "dotenv",
-    "telegram"
+    "telegram",
+    "sqlalchemy",
 
 ]
 known_local_folder = [
@@ -47,4 +49,5 @@ dependencies = [
     "jinja2>=3.1.6",
     "python-dotenv>=1.1.0",
     "python-telegram-bot>=22.1",
+    "sqlalchemy>=2.0.43",
 ]

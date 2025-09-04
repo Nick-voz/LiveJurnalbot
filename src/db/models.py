@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import relationship
 
 DB_URL = os.getenv("DB_URL")
 engine = create_engine(DB_URL)
@@ -34,10 +35,11 @@ class UserScenario(BaseModel):
     id: Mapped[int] = mapped_column(primary_key=True)
     allow_reminding: Mapped[bool]
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    scenario_id: Mapped[int] = mapped_column(ForeignKey("scenarios.id"))
+    scenario_id: Mapped[int] = mapped_column(ForeignKey("scenarios.id"), unique=True)
     reminder_strategy_id: Mapped[int] = mapped_column(
         ForeignKey("reminder_strategies.id")
     )
+    scenario: Mapped["Scenario"] = relationship(lazy="joined")
 
 
 class ReminderStrategy(BaseModel):
@@ -61,10 +63,6 @@ class Record(BaseModel):
     parameter_id: Mapped[int] = mapped_column(ForeignKey("parametrs.id"))
     value: Mapped[float]
     datetime: Mapped[DateTime] = mapped_column(DateTime(timezone=True))
-
-
-def bruh(chat_id: int):
-    pass
 
 
 # BaseModel.metadata.drop_all(engine)

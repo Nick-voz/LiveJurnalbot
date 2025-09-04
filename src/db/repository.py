@@ -1,5 +1,6 @@
 from typing import Iterable
 
+from logging import Logger
 from sqlalchemy import Select
 from sqlalchemy.orm import Session
 
@@ -9,10 +10,17 @@ from src.db.models import UserScenario
 from src.db.models import engine
 
 
-def get_user_by_chat(chat_id: int) -> User:
+def create_user(chat_id) -> User:
+    user = User(chat_id=chat_id)
+    with Session(engine) as s:
+        s.add(user)
+        s.commit()
+
+
+def get_user_by_chat(chat_id: int) -> User | None:
     selector = Select(User).where(User.chat_id == chat_id)
     with Session(engine) as s:
-        user = s.scalars(selector).one()
+        user = s.scalars(selector).one_or_none()
     return user
 
 
@@ -40,11 +48,12 @@ def create_or_get_scenario(name: str) -> Scenario:
     return scenario
 
 
-def get_user_scenario_by_name(name, chat_id) -> UserScenario:
+def find_user_scenario_by_name(name, chat_id) -> UserScenario:
     user = get_user_by_chat(chat_id)
     scenario = find_scenario_by_name(name)
+
     if scenario is None:
-        raise RuntimeError()
+        return
 
     selector = (
         Select(UserScenario)
@@ -53,20 +62,28 @@ def get_user_scenario_by_name(name, chat_id) -> UserScenario:
     )
 
     with Session(engine) as s:
-        user_scenario = s.scalars(selector).one()
+        user_scenario = s.scalars(selector).one_or_none()
 
     return user_scenario
 
 
 def create_user_scenario(name: str, chat_id: int) -> UserScenario:
+    user_scenario = find_user_scenario_by_name(name, chat_id)
+    if user_scenario is not None:
+        return user_scenario
+
     scenario = create_or_get_scenario(name)
     user = get_user_by_chat(chat_id)
 
     user_scenario = UserScenario(scenario_id=scenario.id, user_id=user.id)
+    user_scenario.allow_reminding = False
+    user_scenario.reminder_strategy_id = 1
 
     with Session(engine) as s:
         s.add(user_scenario)
         s.commit()
+
+    return find_user_scenario_by_name(name, chat_id)
 
 
 def get_user_scenarios_by_chat(chat_id: int) -> Iterable["UserScenario"]:

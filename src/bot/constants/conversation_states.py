@@ -3,4 +3,4 @@ from enum import auto
 
 
 class Scenario(IntEnum):
-    ASKING = auto()
+    NAME = auto()

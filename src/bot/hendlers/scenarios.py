@@ -22,7 +22,7 @@ async def get_my_scenarios(update: Update, _) -> None:
 async def create_scenario_cmd(update: Update, _) -> int:
     reply_text = env.get_template("ask_scenario_name.txt").render()
     await update.message.reply_text(reply_text)
-    return Scenario.ASKING
+    return Scenario.NAME
 
 
 async def get_scenario_name(update: Update, _) -> int:
@@ -47,7 +47,7 @@ def register(app: Application):
             ConversationHandler(
                 entry_points=(create_scenario_handler,),
                 states={
-                    Scenario.ASKING: (get_scenario_name_handler,),
+                    Scenario.NAME: (get_scenario_name_handler,),
                 },
                 fallbacks=(unexpected_err_handler,),
             ),

@@ -3,6 +3,7 @@ from typing import Iterable
 from sqlalchemy import Select
 from sqlalchemy.orm import Session
 
+from src.db.models import Parametr
 from src.db.models import ReminderStrategy
 from src.db.models import Scenario
 from src.db.models import User
@@ -118,3 +119,27 @@ def find_or_create_reminder_strategy(user_scenario: UserScenario) -> ReminderStr
         return find_or_create_reminder_strategy(user_scenario)
 
     return strategy
+
+
+def create_parametr(user_scenario: UserScenario, name: str) -> UserScenario:
+    parametr = Parametr(name=name, user_scenario_id=user_scenario.id)
+    with Session(engine) as s:
+        s.add(parametr)
+        s.commit()
+
+
+def find_or_create_parametr(user_scenario: UserScenario, name: str) -> Parametr:
+    selector = (
+        Select(Parametr)
+        .join(UserScenario)
+        .where(Parametr.user_scenario_id == UserScenario.id)
+        .where(Parametr.name == name)
+    )
+    with Session(engine) as s:
+        parametr = s.scalars(selector).one_or_none()
+
+    if parametr is None:
+        create_parametr(user_scenario, name)
+        return find_or_create_parametr(user_scenario, name)
+
+    return parametr

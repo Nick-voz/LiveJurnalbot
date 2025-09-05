@@ -58,7 +58,7 @@ class Parametr(BaseModel):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(30), nullable=False)
     user_scenario_id: Mapped[int] = mapped_column(ForeignKey("user_scenarios.id"))
-    default_value: Mapped[int | None]
+    default_value: Mapped[float | None]
 
 
 class Record(BaseModel):

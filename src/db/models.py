@@ -6,6 +6,7 @@ from sqlalchemy import String
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import Session
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 
@@ -14,7 +15,10 @@ engine = create_engine(DB_URL)
 
 
 class BaseModel(DeclarativeBase):
-    pass
+    def save(self) -> None:
+        with Session(engine) as s:
+            s.add(self)
+            s.commit()
 
 
 class User(BaseModel):
@@ -45,8 +49,8 @@ class UserScenario(BaseModel):
 class ReminderStrategy(BaseModel):
     __tablename__ = "reminder_strategies"
     id: Mapped[int] = mapped_column(primary_key=True)
-    module: Mapped[int] = mapped_column(nullable=False)
-    shift: Mapped[int] = mapped_column(nullable=False)
+    module: Mapped[int] = mapped_column(nullable=False, default=0)
+    shift: Mapped[int] = mapped_column(nullable=False, default=0)
 
 
 class Parametr(BaseModel):

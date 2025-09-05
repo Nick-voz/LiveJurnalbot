@@ -1,9 +1,9 @@
 from typing import Iterable
 
-from logging import Logger
 from sqlalchemy import Select
 from sqlalchemy.orm import Session
 
+from src.db.models import ReminderStrategy
 from src.db.models import Scenario
 from src.db.models import User
 from src.db.models import UserScenario
@@ -94,3 +94,27 @@ def get_user_scenarios_by_chat(chat_id: int) -> Iterable["UserScenario"]:
         scenarios = s.scalars(selector).all()
 
     return scenarios
+
+
+def create_reminder_strategy(user_scenario: UserScenario) -> ReminderStrategy:
+    strategy = ReminderStrategy()
+    with Session(engine) as s:
+        s.add(strategy)
+        user_scenario.reminder_strategy_id = strategy.id
+        s.commit()
+
+
+def find_or_create_reminder_strategy(user_scenario: UserScenario) -> ReminderStrategy:
+    selector = (
+        Select(ReminderStrategy)
+        .join(UserScenario)
+        .where(UserScenario.reminder_strategy_id == ReminderStrategy.id)
+    )
+    with Session(engine) as s:
+        strategy = s.scalars(selector).one_or_none()
+
+    if strategy is None:
+        create_reminder_strategy(user_scenario)
+        return find_or_create_reminder_strategy(user_scenario)
+
+    return strategy

@@ -34,6 +34,7 @@ disable = [
     "too-few-public-methods",
     "missing-module-docstring",
     "too-many-instance-attributes",
+    "f-string-without-interpolation",
 ]
 
 [tool.pyright]

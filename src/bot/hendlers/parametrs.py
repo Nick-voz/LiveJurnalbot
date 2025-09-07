@@ -35,7 +35,7 @@ async def choose_user_scenario(
         await update.message.reply_text("try again")
         return ParametrStates.USER_SCENARIO
 
-    await update.message.reply_text(f"name for the parametr")
+    await update.message.reply_text("name for the parametr")
 
     context.user_data[UDK.USER_SCENARIO] = user_scenio
 
@@ -53,7 +53,7 @@ async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     except ValueError:
         return ParametrStates.NAME
 
-    await update.message.reply_text(f"send default value for the parametr")
+    await update.message.reply_text("send default value for the parametr")
 
     parametr = find_or_create_parametr(scenario, name)
     context.user_data[UDK.PARAMETR] = parametr
@@ -73,7 +73,7 @@ async def get_default_value(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         return ParametrStates.DEFAULT_VALUE
 
     parametr.save()
-    await update.message.reply_text(f"success")
+    await update.message.reply_text("success")
 
     return END
 

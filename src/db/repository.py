@@ -143,3 +143,12 @@ def find_or_create_parametr(user_scenario: UserScenario, name: str) -> Parametr:
         return find_or_create_parametr(user_scenario, name)
 
     return parametr
+
+
+def get_user_scenario_parametrs(user_scenario: UserScenario) -> Iterable[Parametr]:
+    selector = Select(Parametr).where(Parametr.user_scenario_id == user_scenario.id)
+
+    with Session(engine) as s:
+        parametrs = s.scalars(selector).all()
+
+    return parametrs

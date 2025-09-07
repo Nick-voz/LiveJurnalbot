@@ -35,15 +35,15 @@ async def choose_user_scenario(
         return ReminderStrategyStates.USER_SCENARIO
 
     strategy = find_or_create_reminder_strategy(user_scenio)
-    context.user_data[UDK.REMINDER_STRATEGY_KEY] = strategy
+    context.user_data[UDK.REMINDER_STRATEGY] = strategy
 
-    await update.message.reply_text(f"sent module")
+    await update.message.reply_text("sent module")
 
     return ReminderStrategyStates.MODULE
 
 
 async def get_module(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    strategy: ReminderStrategy = context.user_data.get(UDK.REMINDER_STRATEGY_KEY)
+    strategy: ReminderStrategy = context.user_data.get(UDK.REMINDER_STRATEGY)
 
     if strategy is None:
         await update.message.reply_text("something want wrong")
@@ -54,13 +54,13 @@ async def get_module(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     except ValueError:
         return ReminderStrategyStates.MODULE
 
-    await update.message.reply_text(f"send shift")
+    await update.message.reply_text("send shift")
 
     return ReminderStrategyStates.SHIFT
 
 
 async def get_shift(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    strategy: ReminderStrategy = context.user_data.get(UDK.REMINDER_STRATEGY_KEY)
+    strategy: ReminderStrategy = context.user_data.get(UDK.REMINDER_STRATEGY)
     if strategy is None:
         await update.message.reply_text("something want wrong")
         return END
@@ -71,7 +71,7 @@ async def get_shift(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         return ReminderStrategyStates.SHIFT
 
     strategy.save()
-    await update.message.reply_text(f"success")
+    await update.message.reply_text("success")
 
     return END
 

@@ -5,6 +5,7 @@ from telegram.ext import ConversationHandler
 from telegram.ext import MessageHandler
 from telegram.ext import filters
 
+from src.bot.constants.conversation_states import END
 from src.bot.constants.conversation_states import Scenario
 from src.bot.hendlers.base import unexpected_err_handler
 from src.db.repository import create_user_scenario
@@ -32,7 +33,7 @@ async def get_scenario_name(update: Update, _) -> int:
     await update.message.reply_text(
         f"scenario with name: '{name}' was added to your scenarios"
     )
-    return -1
+    return END
 
 
 get_my_scenario_cmd_handler = CommandHandler("get_my_scenarios", get_my_scenarios)

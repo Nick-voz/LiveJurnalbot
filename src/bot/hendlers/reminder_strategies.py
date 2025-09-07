@@ -6,15 +6,14 @@ from telegram.ext import ConversationHandler
 from telegram.ext import MessageHandler
 from telegram.ext import filters
 
+from src.bot.constants.conversation_states import END
 from src.bot.constants.conversation_states import ReminderStrategyStates
+from src.bot.constants.user_data_keys import UDK
 from src.bot.hendlers.base import unexpected_err_handler
 from src.db.models import ReminderStrategy
 from src.db.repository import find_or_create_reminder_strategy
 from src.db.repository import find_user_scenario_by_name
 from src.db.repository import get_user_scenarios_by_chat
-
-REMINDER_STRATEGY_KEY = 1
-END = -1
 
 
 async def start_reminder_strategy_conv(update: Update, _) -> int:
@@ -36,7 +35,7 @@ async def choose_user_scenario(
         return ReminderStrategyStates.USER_SCENARIO
 
     strategy = find_or_create_reminder_strategy(user_scenio)
-    context.user_data[REMINDER_STRATEGY_KEY] = strategy
+    context.user_data[UDK.REMINDER_STRATEGY_KEY] = strategy
 
     await update.message.reply_text(f"sent module")
 
@@ -44,7 +43,7 @@ async def choose_user_scenario(
 
 
 async def get_module(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    strategy: ReminderStrategy = context.user_data.get(REMINDER_STRATEGY_KEY)
+    strategy: ReminderStrategy = context.user_data.get(UDK.REMINDER_STRATEGY_KEY)
 
     if strategy is None:
         await update.message.reply_text("something want wrong")
@@ -61,7 +60,7 @@ async def get_module(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def get_shift(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    strategy: ReminderStrategy = context.user_data.get(REMINDER_STRATEGY_KEY)
+    strategy: ReminderStrategy = context.user_data.get(UDK.REMINDER_STRATEGY_KEY)
     if strategy is None:
         await update.message.reply_text("something want wrong")
         return END

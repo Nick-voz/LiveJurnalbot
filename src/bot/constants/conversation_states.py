@@ -1,6 +1,8 @@
 from enum import IntEnum
 from enum import auto
 
+END = -1
+
 
 class Scenario(IntEnum):
     NAME = auto()

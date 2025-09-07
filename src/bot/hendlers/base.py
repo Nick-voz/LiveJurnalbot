@@ -4,6 +4,7 @@ from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler
 from telegram.ext import filters
 
+from src.bot.constants.conversation_states import END
 from src.db.repository import create_user
 from src.db.repository import get_user_by_chat
 from src.templates.env import env
@@ -26,8 +27,8 @@ async def unexpected_err(update: Update, _) -> None:
     await update.message.reply_text("unexpected err")
 
 
-async def cancel(_, __) -> int:
-    return -1
+async def cancel(*_) -> int:
+    return END
 
 
 start_cmd_handler = CommandHandler("start", hello)

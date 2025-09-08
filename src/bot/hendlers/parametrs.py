@@ -1,5 +1,6 @@
 from telegram import Update
 from telegram.ext import Application
+from telegram.ext import CallbackQueryHandler
 from telegram.ext import CommandHandler
 from telegram.ext import ContextTypes
 from telegram.ext import ConversationHandler
@@ -9,7 +10,9 @@ from telegram.ext import filters
 from src.bot.constants.conversation_states import END
 from src.bot.constants.conversation_states import ParametrStates
 from src.bot.constants.user_data_keys import UDK
+from src.bot.hendlers.base import cancel_hendler
 from src.bot.hendlers.base import unexpected_err_handler
+from src.bot.utils import generate_inline_keyboard_user_scenarios
 from src.db.models import Parametr
 from src.db.models import UserScenario
 from src.db.repository import find_or_create_parametr
@@ -19,23 +22,28 @@ from src.db.repository import get_user_scenarios_by_chat
 
 async def start_create_parametr_conv(update: Update, _) -> int:
     user_scenarios = get_user_scenarios_by_chat(chat_id=update.effective_chat.id)
-    replay_text = f"choose users scenario {[e.scenario.name for e in user_scenarios]}"
-    await update.message.reply_text(replay_text)
+
+    reply_markup = generate_inline_keyboard_user_scenarios(user_scenarios)
+
+    await update.message.reply_text("Select scenario", reply_markup=reply_markup)
     return ParametrStates.USER_SCENARIO
 
 
 async def choose_user_scenario(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> int:
-    name = update.message.text
+    query = update.callback_query
+    await query.answer()
+    name = query.data
     chat_id = update.effective_chat.id
     user_scenio = find_user_scenario_by_name(name, chat_id)
 
     if user_scenio is None:
-        await update.message.reply_text("try again")
+        await query.message.reply_text("try again")
         return ParametrStates.USER_SCENARIO
 
-    await update.message.reply_text("name for the parametr")
+    await query.message.reply_text("Send name for the parametr")
+    await query.delete_message()
 
     context.user_data[UDK.USER_SCENARIO] = user_scenio
 
@@ -79,7 +87,7 @@ async def get_default_value(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
 
 start_strategy_conv_hendler = CommandHandler("set_parametr", start_create_parametr_conv)
-choose_user_scenario_hendler = MessageHandler(filters.TEXT, choose_user_scenario)
+choose_user_scenario_hendler = CallbackQueryHandler(choose_user_scenario)
 get_name_hendler = MessageHandler(filters.TEXT, get_name)
 get_default_hendler = MessageHandler(filters.TEXT, get_default_value)
 
@@ -93,6 +101,6 @@ def register(app: Application):
                 ParametrStates.NAME: (get_name_hendler,),
                 ParametrStates.DEFAULT_VALUE: (get_default_hendler,),
             },
-            fallbacks=(unexpected_err_handler,),
+            fallbacks=(cancel_hendler, unexpected_err_handler),
         )
     )

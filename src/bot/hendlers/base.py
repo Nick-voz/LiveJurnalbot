@@ -27,14 +27,15 @@ async def unexpected_err(update: Update, _) -> None:
     await update.message.reply_text("unexpected err")
 
 
-async def cancel(*_) -> int:
+async def cancel(update: Update, _) -> int:
+    await update.message.reply_text("conv canceled")
     return END
 
 
 start_cmd_handler = CommandHandler("start", hello)
 unexpected_err_handler = MessageHandler(filters.ALL, unexpected_err)
-cancel_handler = CommandHandler("cancel", cancel)
+cancel_hendler = CommandHandler("cancel", cancel)
 
 
 def register(app: Application):
-    app.add_handlers((start_cmd_handler, cancel_handler))
+    app.add_handlers((start_cmd_handler,))

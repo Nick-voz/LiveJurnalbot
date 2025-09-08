@@ -1,8 +1,6 @@
 from zoneinfo import ZoneInfo
 
 from datetime import datetime
-from telegram import InlineKeyboardButton
-from telegram import InlineKeyboardMarkup
 from telegram import Update
 from telegram.ext import Application
 from telegram.ext import CallbackQueryHandler
@@ -16,7 +14,10 @@ from src.bot.constants.conversation_states import END
 from src.bot.constants.conversation_states import ParametrStates
 from src.bot.constants.conversation_states import RecordStates
 from src.bot.constants.user_data_keys import UDK
+from src.bot.hendlers.base import cancel_hendler
 from src.bot.hendlers.base import unexpected_err_handler
+from src.bot.utils import generate_inline_keyboard_parametrs
+from src.bot.utils import generate_inline_keyboard_user_scenarios
 from src.db.models import Parametr
 from src.db.models import Record
 from src.db.repository import find_user_scenario_by_name
@@ -27,12 +28,7 @@ from src.db.repository import get_user_scenarios_by_chat
 async def start_add_record_conv(update: Update, _) -> int:
     user_scenarios = get_user_scenarios_by_chat(chat_id=update.effective_chat.id)
 
-    keybord = [[]]
-    for e in user_scenarios:
-        name = e.scenario.name
-        keybord[0].append(InlineKeyboardButton(f"{name}", callback_data=name))
-
-    reply_markup = InlineKeyboardMarkup(keybord)
+    reply_markup = generate_inline_keyboard_user_scenarios(user_scenarios)
 
     await update.message.reply_text("Select scenario", reply_markup=reply_markup)
     return RecordStates.USER_SCENARIO
@@ -52,12 +48,7 @@ async def choose_user_scenario(
 
     parametrs = get_user_scenario_parametrs(user_scenio)
 
-    keybord = [[]]
-    for e in parametrs:
-        name = e.name
-        keybord[0].append(InlineKeyboardButton(f"{name}", callback_data=name))
-
-    reply_markup = InlineKeyboardMarkup(keybord)
+    reply_markup = generate_inline_keyboard_parametrs(parametrs)
 
     await query.edit_message_text("choose parametr", reply_markup=reply_markup)
 
@@ -82,7 +73,7 @@ async def choose_parametr(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             (p for p in parametrs if p.name.lower() == parametr_name.lower())
         )
     except StopIteration:
-        await update.message.reply_text("can not find parametr with this name")
+        await query.message.reply_text("can not find parametr with this name")
 
     await query.edit_message_text("send value for parametr")
     context.user_data[UDK.PARAMETR] = parametr
@@ -123,6 +114,6 @@ def register(app: Application):
                 RecordStates.PARAMETR: (choose_parametr_hendler,),
                 RecordStates.VALUE: (get_value_hendler,),
             },
-            fallbacks=(unexpected_err_handler,),
+            fallbacks=(cancel_hendler, unexpected_err_handler),
         )
     )

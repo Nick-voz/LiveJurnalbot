@@ -76,9 +76,9 @@ def create_user_scenario(name: str, chat_id: int) -> UserScenario:
     scenario = create_or_get_scenario(name)
     user = get_user_by_chat(chat_id)
 
-    user_scenario = UserScenario(scenario_id=scenario.id, user_id=user.id)
-    user_scenario.allow_reminding = False
-    user_scenario.reminder_strategy_id = 1
+    user_scenario = UserScenario(
+        scenario_id=scenario.id, user_id=user.id, allow_reminding=False
+    )
 
     with Session(engine) as s:
         s.add(user_scenario)
@@ -99,10 +99,13 @@ def get_user_scenarios_by_chat(chat_id: int) -> Iterable["UserScenario"]:
 
 def create_reminder_strategy(user_scenario: UserScenario) -> ReminderStrategy:
     strategy = ReminderStrategy()
+    user_scenario.reminde_strategy = strategy
     with Session(engine) as s:
-        s.add(strategy)
-        user_scenario.reminder_strategy_id = strategy.id
+        s.add_all((strategy, user_scenario))
+        user_scenario.reminde_strategy = strategy
         s.commit()
+
+    return find_or_create_reminder_strategy(user_scenario)
 
 
 def find_or_create_reminder_strategy(user_scenario: UserScenario) -> ReminderStrategy:
@@ -110,13 +113,13 @@ def find_or_create_reminder_strategy(user_scenario: UserScenario) -> ReminderStr
         Select(ReminderStrategy)
         .join(UserScenario)
         .where(UserScenario.reminder_strategy_id == ReminderStrategy.id)
+        .where(UserScenario.id == user_scenario.id)
     )
     with Session(engine) as s:
         strategy = s.scalars(selector).one_or_none()
 
     if strategy is None:
-        create_reminder_strategy(user_scenario)
-        return find_or_create_reminder_strategy(user_scenario)
+        return create_reminder_strategy(user_scenario)
 
     return strategy
 

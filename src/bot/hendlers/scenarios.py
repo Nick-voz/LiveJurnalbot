@@ -7,6 +7,7 @@ from telegram.ext import filters
 
 from src.bot.constants.conversation_states import END
 from src.bot.constants.conversation_states import Scenario
+from src.bot.hendlers.base import cancel_hendler
 from src.bot.hendlers.base import unexpected_err_handler
 from src.db.repository import create_user_scenario
 from src.db.repository import get_user_scenarios_by_chat
@@ -50,7 +51,7 @@ def register(app: Application):
                 states={
                     Scenario.NAME: (get_scenario_name_handler,),
                 },
-                fallbacks=(unexpected_err_handler,),
+                fallbacks=(cancel_hendler, unexpected_err_handler),
             ),
         )
     )

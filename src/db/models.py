@@ -41,9 +41,10 @@ class UserScenario(BaseModel):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     scenario_id: Mapped[int] = mapped_column(ForeignKey("scenarios.id"), unique=True)
     reminder_strategy_id: Mapped[int] = mapped_column(
-        ForeignKey("reminder_strategies.id")
+        ForeignKey("reminder_strategies.id"), nullable=True
     )
     scenario: Mapped["Scenario"] = relationship(lazy="joined")
+    reminde_strategy: Mapped["ReminderStrategy"] = relationship(lazy="joined")
 
 
 class ReminderStrategy(BaseModel):

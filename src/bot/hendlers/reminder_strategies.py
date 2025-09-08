@@ -1,5 +1,6 @@
 from telegram import Update
 from telegram.ext import Application
+from telegram.ext import CallbackQueryHandler
 from telegram.ext import CommandHandler
 from telegram.ext import ContextTypes
 from telegram.ext import ConversationHandler
@@ -9,7 +10,9 @@ from telegram.ext import filters
 from src.bot.constants.conversation_states import END
 from src.bot.constants.conversation_states import ReminderStrategyStates
 from src.bot.constants.user_data_keys import UDK
+from src.bot.hendlers.base import cancel_hendler
 from src.bot.hendlers.base import unexpected_err_handler
+from src.bot.utils import generate_inline_keyboard_user_scenarios
 from src.db.models import ReminderStrategy
 from src.db.repository import find_or_create_reminder_strategy
 from src.db.repository import find_user_scenario_by_name
@@ -18,26 +21,28 @@ from src.db.repository import get_user_scenarios_by_chat
 
 async def start_reminder_strategy_conv(update: Update, _) -> int:
     user_scenarios = get_user_scenarios_by_chat(chat_id=update.effective_chat.id)
-    replay_text = f"choose users scenario {[e.scenario.name for e in user_scenarios]}"
-    await update.message.reply_text(replay_text)
+    reply_markup = generate_inline_keyboard_user_scenarios(user_scenarios)
+    await update.message.reply_text("Select scenario", reply_markup=reply_markup)
     return ReminderStrategyStates.USER_SCENARIO
 
 
 async def choose_user_scenario(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> int:
-    name = update.message.text
+    query = update.callback_query
+    await query.answer()
+    name = query.data
     chat_id = update.effective_chat.id
     user_scenio = find_user_scenario_by_name(name, chat_id)
 
     if user_scenio is None:
-        await update.message.reply_text("try again")
+        await query.message.reply_text("try again")
         return ReminderStrategyStates.USER_SCENARIO
 
     strategy = find_or_create_reminder_strategy(user_scenio)
     context.user_data[UDK.REMINDER_STRATEGY] = strategy
 
-    await update.message.reply_text("sent module")
+    await query.message.reply_text("sent module")
 
     return ReminderStrategyStates.MODULE
 
@@ -79,7 +84,7 @@ async def get_shift(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 start_strategy_conv_hendler = CommandHandler(
     "set_strateg", start_reminder_strategy_conv
 )
-choose_user_scenario_hendler = MessageHandler(filters.TEXT, choose_user_scenario)
+choose_user_scenario_hendler = CallbackQueryHandler(choose_user_scenario)
 get_module_hendler = MessageHandler(filters.TEXT, get_module)
 get_shift_hendler = MessageHandler(filters.TEXT, get_shift)
 
@@ -93,6 +98,6 @@ def register(app: Application):
                 ReminderStrategyStates.MODULE: (get_module_hendler,),
                 ReminderStrategyStates.SHIFT: (get_shift_hendler,),
             },
-            fallbacks=(unexpected_err_handler,),
+            fallbacks=(cancel_hendler, unexpected_err_handler),
         )
     )

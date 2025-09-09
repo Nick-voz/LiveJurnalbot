@@ -4,6 +4,7 @@ from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler
 from telegram.ext import filters
 
+from src.bot.constants.commands_text import CMD
 from src.bot.constants.conversation_states import END
 from src.db.repository import create_user
 from src.db.repository import get_user_by_chat
@@ -32,9 +33,9 @@ async def cancel(update: Update, _) -> int:
     return END
 
 
-start_cmd_handler = CommandHandler("start", hello)
+start_cmd_handler = CommandHandler(CMD.START, hello)
 unexpected_err_handler = MessageHandler(filters.ALL, unexpected_err)
-cancel_hendler = CommandHandler("cancel", cancel)
+cancel_hendler = CommandHandler(CMD.CANCEL, cancel)
 
 
 def register(app: Application):

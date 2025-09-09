@@ -42,9 +42,7 @@ async def choose_user_scenario(
         await query.message.reply_text("try again")
         return ParametrStates.USER_SCENARIO
 
-    await query.message.reply_text("Send name for the parametr")
-    await query.delete_message()
-
+    await query.edit_message_text("Send name for the parametr")
     context.user_data[UDK.USER_SCENARIO] = user_scenio
 
     return ParametrStates.NAME

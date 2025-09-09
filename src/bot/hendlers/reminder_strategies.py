@@ -7,6 +7,7 @@ from telegram.ext import ConversationHandler
 from telegram.ext import MessageHandler
 from telegram.ext import filters
 
+from src.bot.constants.commands_text import CMD
 from src.bot.constants.conversation_states import END
 from src.bot.constants.conversation_states import ReminderStrategyStates
 from src.bot.constants.user_data_keys import UDK
@@ -82,7 +83,7 @@ async def get_shift(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 start_strategy_conv_hendler = CommandHandler(
-    "set_strateg", start_reminder_strategy_conv
+    CMD.CREATE_STRATEGY, start_reminder_strategy_conv
 )
 choose_user_scenario_hendler = CallbackQueryHandler(choose_user_scenario)
 get_module_hendler = MessageHandler(filters.TEXT, get_module)

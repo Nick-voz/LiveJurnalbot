@@ -5,6 +5,7 @@ from telegram.ext import ConversationHandler
 from telegram.ext import MessageHandler
 from telegram.ext import filters
 
+from src.bot.constants.commands_text import CMD
 from src.bot.constants.conversation_states import END
 from src.bot.constants.conversation_states import Scenario
 from src.bot.hendlers.base import cancel_hendler
@@ -37,8 +38,8 @@ async def get_scenario_name(update: Update, _) -> int:
     return END
 
 
-get_my_scenario_cmd_handler = CommandHandler("get_my_scenarios", get_my_scenarios)
-create_scenario_handler = CommandHandler("create_scenario", create_scenario_cmd)
+get_my_scenario_cmd_handler = CommandHandler(CMD.SCENARIOS_LIST, get_my_scenarios)
+create_scenario_handler = CommandHandler(CMD.CREATE_SCENARIO, create_scenario_cmd)
 get_scenario_name_handler = MessageHandler(filters.TEXT, get_scenario_name)
 
 

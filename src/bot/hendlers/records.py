@@ -10,6 +10,7 @@ from telegram.ext import ConversationHandler
 from telegram.ext import MessageHandler
 from telegram.ext import filters
 
+from src.bot.constants.commands_text import CMD
 from src.bot.constants.conversation_states import END
 from src.bot.constants.conversation_states import ParametrStates
 from src.bot.constants.conversation_states import RecordStates
@@ -99,7 +100,7 @@ async def get_value(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return END
 
 
-start_add_record_conv_hendler = CommandHandler("add_record", start_add_record_conv)
+start_add_record_conv_hendler = CommandHandler(CMD.CREATE_RECORD, start_add_record_conv)
 choose_user_scenario_hendler = CallbackQueryHandler(choose_user_scenario)
 choose_parametr_hendler = CallbackQueryHandler(choose_parametr)
 get_value_hendler = MessageHandler(filters.TEXT, get_value)

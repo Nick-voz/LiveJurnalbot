@@ -24,3 +24,8 @@ class RecordStates(IntEnum):
     USER_SCENARIO = auto()
     PARAMETR = auto()
     VALUE = auto()
+
+
+class Base(IntEnum):
+    CREATE_SCENARIO = auto()
+    CHOOSING_OPTION = auto()

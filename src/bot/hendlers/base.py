@@ -1,3 +1,7 @@
+from os import umask
+
+from telegram import InlineKeyboardButton
+from telegram import InlineKeyboardMarkup
 from telegram import Update
 from telegram.ext import Application
 from telegram.ext import CommandHandler
@@ -6,22 +10,6 @@ from telegram.ext import filters
 
 from src.bot.constants.commands_text import CMD
 from src.bot.constants.conversation_states import END
-from src.db.repository import create_user
-from src.db.repository import get_user_by_chat
-from src.templates.env import env
-
-
-async def hello(update: Update, _) -> None:
-    chat_id = update.effective_chat.id
-    user = get_user_by_chat(chat_id)
-    if user is None:
-        create_user(chat_id)
-        user = get_user_by_chat(chat_id)
-
-    reply_text = env.get_template("greeting.txt").render(
-        name=update.effective_chat.first_name
-    )
-    await update.message.reply_text(reply_text)
 
 
 async def unexpected_err(update: Update, _) -> None:
@@ -33,10 +21,23 @@ async def cancel(update: Update, _) -> int:
     return END
 
 
-start_cmd_handler = CommandHandler(CMD.START, hello)
+async def send_menu(update: Update, _):
+    reply_text = f"Hellow {update.effective_chat.first_name}"
+
+    buttons = [
+        [
+            InlineKeyboardButton(
+                text="Add scenario", callback_data=CMD.CREATE_SCENARIO
+            ),
+        ],
+    ]
+    keyboard = InlineKeyboardMarkup(buttons)
+
+    if update.message is not None:
+        await update.message.reply_text(reply_text, reply_markup=keyboard)
+    else:
+        await update.inline_query.message(reply_text, reply_markup=keyboard)
+
+
 unexpected_err_handler = MessageHandler(filters.ALL, unexpected_err)
 cancel_hendler = CommandHandler(CMD.CANCEL, cancel)
-
-
-def register(app: Application):
-    app.add_handlers((start_cmd_handler,))

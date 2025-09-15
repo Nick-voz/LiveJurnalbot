@@ -1,7 +1,4 @@
-from enum import Enum
-
-
-class CMD(Enum):
+class CMD:
     CANCEL = "cancel"
     START = "start"
     CREATE_RECORD = "add_record"

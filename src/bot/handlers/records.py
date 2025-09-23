@@ -15,8 +15,8 @@ from src.bot.constants.conversation_states import END
 from src.bot.constants.conversation_states import ParametrStates
 from src.bot.constants.conversation_states import RecordStates
 from src.bot.constants.user_data_keys import UDK
-from src.bot.hendlers.base import cancel_hendler
-from src.bot.hendlers.base import unexpected_err_handler
+from src.bot.handlers.base import cancel_handler
+from src.bot.handlers.base import unexpected_err_handler
 from src.bot.utils import generate_inline_keyboard_parametrs
 from src.bot.utils import generate_inline_keyboard_user_scenarios
 from src.db.models import Parametr
@@ -100,21 +100,21 @@ async def get_value(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return END
 
 
-start_add_record_conv_hendler = CommandHandler(CMD.CREATE_RECORD, start_add_record_conv)
-choose_user_scenario_hendler = CallbackQueryHandler(choose_user_scenario)
-choose_parametr_hendler = CallbackQueryHandler(choose_parametr)
-get_value_hendler = MessageHandler(filters.TEXT, get_value)
+start_add_record_conv_handler = CommandHandler(CMD.CREATE_RECORD, start_add_record_conv)
+choose_user_scenario_handler = CallbackQueryHandler(choose_user_scenario)
+choose_parametr_handler = CallbackQueryHandler(choose_parametr)
+get_value_handler = MessageHandler(filters.TEXT, get_value)
 
 
 def register(app: Application):
     app.add_handler(
         ConversationHandler(
-            entry_points=(start_add_record_conv_hendler,),
+            entry_points=(start_add_record_conv_handler,),
             states={
-                RecordStates.USER_SCENARIO: (choose_user_scenario_hendler,),
-                RecordStates.PARAMETR: (choose_parametr_hendler,),
-                RecordStates.VALUE: (get_value_hendler,),
+                RecordStates.USER_SCENARIO: (choose_user_scenario_handler,),
+                RecordStates.PARAMETR: (choose_parametr_handler,),
+                RecordStates.VALUE: (get_value_handler,),
             },
-            fallbacks=(cancel_hendler, unexpected_err_handler),
+            fallbacks=(cancel_handler, unexpected_err_handler),
         )
     )

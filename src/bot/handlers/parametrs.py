@@ -10,8 +10,8 @@ from telegram.ext import filters
 from src.bot.constants.conversation_states import END
 from src.bot.constants.conversation_states import ParametrStates
 from src.bot.constants.user_data_keys import UDK
-from src.bot.hendlers.base import cancel_hendler
-from src.bot.hendlers.base import unexpected_err_handler
+from src.bot.handlers.base import cancel_handler
+from src.bot.handlers.base import unexpected_err_handler
 from src.bot.utils import generate_inline_keyboard_user_scenarios
 from src.db.models import Parametr
 from src.db.models import UserScenario
@@ -84,21 +84,21 @@ async def get_default_value(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     return END
 
 
-start_strategy_conv_hendler = CommandHandler("set_parametr", start_create_parametr_conv)
-choose_user_scenario_hendler = CallbackQueryHandler(choose_user_scenario)
-get_name_hendler = MessageHandler(filters.TEXT, get_name)
-get_default_hendler = MessageHandler(filters.TEXT, get_default_value)
+start_strategy_conv_handler = CommandHandler("set_parametr", start_create_parametr_conv)
+choose_user_scenario_handler = CallbackQueryHandler(choose_user_scenario)
+get_name_handler = MessageHandler(filters.TEXT, get_name)
+get_default_handler = MessageHandler(filters.TEXT, get_default_value)
 
 
 def register(app: Application):
     app.add_handler(
         ConversationHandler(
-            entry_points=(start_strategy_conv_hendler,),
+            entry_points=(start_strategy_conv_handler,),
             states={
-                ParametrStates.USER_SCENARIO: (choose_user_scenario_hendler,),
-                ParametrStates.NAME: (get_name_hendler,),
-                ParametrStates.DEFAULT_VALUE: (get_default_hendler,),
+                ParametrStates.USER_SCENARIO: (choose_user_scenario_handler,),
+                ParametrStates.NAME: (get_name_handler,),
+                ParametrStates.DEFAULT_VALUE: (get_default_handler,),
             },
-            fallbacks=(cancel_hendler, unexpected_err_handler),
+            fallbacks=(cancel_handler, unexpected_err_handler),
         )
     )

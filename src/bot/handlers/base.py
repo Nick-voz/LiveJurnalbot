@@ -3,7 +3,6 @@ from os import umask
 from telegram import InlineKeyboardButton
 from telegram import InlineKeyboardMarkup
 from telegram import Update
-from telegram.ext import Application
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler
 from telegram.ext import filters
@@ -40,4 +39,4 @@ async def send_menu(update: Update, _):
 
 
 unexpected_err_handler = MessageHandler(filters.ALL, unexpected_err)
-cancel_hendler = CommandHandler(CMD.CANCEL, cancel)
+cancel_handler = CommandHandler(CMD.CANCEL, cancel)

@@ -10,9 +10,9 @@ from src.bot.constants.commands_text import CMD
 from src.bot.constants.conversation_states import END
 from src.bot.constants.conversation_states import Base
 from src.bot.constants.conversation_states import Scenario
-from src.bot.hendlers.base import cancel_hendler
-from src.bot.hendlers.base import send_menu
-from src.bot.hendlers.base import unexpected_err_handler
+from src.bot.handlers.base import cancel_handler
+from src.bot.handlers.base import send_menu
+from src.bot.handlers.base import unexpected_err_handler
 from src.db.repository import create_user_scenario
 from src.db.repository import get_user_scenarios_by_chat
 from src.templates.env import env
@@ -45,7 +45,7 @@ async def get_scenario_name(update: Update, _) -> int:
 
 get_my_scenario_cmd_handler = CommandHandler(CMD.SCENARIOS_LIST, get_my_scenarios)
 
-create_scenario_conv_hendler = ConversationHandler(
+create_scenario_conv_handler = ConversationHandler(
     entry_points=[
         CallbackQueryHandler(
             create_scenario, pattern="^" + str(CMD.CREATE_SCENARIO) + "$"
@@ -54,7 +54,7 @@ create_scenario_conv_hendler = ConversationHandler(
     states={
         Scenario.NAME: [MessageHandler(filters.TEXT, get_scenario_name)],
     },
-    fallbacks=[cancel_hendler, unexpected_err_handler],
+    fallbacks=[cancel_handler, unexpected_err_handler],
     map_to_parent={END: Base.CHOOSING_OPTION},
 )
 

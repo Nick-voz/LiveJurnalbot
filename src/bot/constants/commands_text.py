@@ -1,6 +1,6 @@
 class CMD:
     CANCEL = "cancel"
-    START = "start"
+    MENU = "menu"
     CREATE_RECORD = "add_record"
     CREATE_STRATEGY = "set_strateg"
     CREATE_SCENARIO = "create_scenario"

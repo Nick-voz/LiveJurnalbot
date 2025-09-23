@@ -11,8 +11,8 @@ from src.bot.constants.commands_text import CMD
 from src.bot.constants.conversation_states import END
 from src.bot.constants.conversation_states import ReminderStrategyStates
 from src.bot.constants.user_data_keys import UDK
-from src.bot.hendlers.base import cancel_hendler
-from src.bot.hendlers.base import unexpected_err_handler
+from src.bot.handlers.base import cancel_handler
+from src.bot.handlers.base import unexpected_err_handler
 from src.bot.utils import generate_inline_keyboard_user_scenarios
 from src.db.models import ReminderStrategy
 from src.db.repository import find_or_create_reminder_strategy
@@ -82,23 +82,23 @@ async def get_shift(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return END
 
 
-start_strategy_conv_hendler = CommandHandler(
+start_strategy_conv_handler = CommandHandler(
     CMD.CREATE_STRATEGY, start_reminder_strategy_conv
 )
-choose_user_scenario_hendler = CallbackQueryHandler(choose_user_scenario)
-get_module_hendler = MessageHandler(filters.TEXT, get_module)
-get_shift_hendler = MessageHandler(filters.TEXT, get_shift)
+choose_user_scenario_handler = CallbackQueryHandler(choose_user_scenario)
+get_module_handler = MessageHandler(filters.TEXT, get_module)
+get_shift_handler = MessageHandler(filters.TEXT, get_shift)
 
 
 def register(app: Application):
     app.add_handler(
         ConversationHandler(
-            entry_points=(start_strategy_conv_hendler,),
+            entry_points=(start_strategy_conv_handler,),
             states={
-                ReminderStrategyStates.USER_SCENARIO: (choose_user_scenario_hendler,),
-                ReminderStrategyStates.MODULE: (get_module_hendler,),
-                ReminderStrategyStates.SHIFT: (get_shift_hendler,),
+                ReminderStrategyStates.USER_SCENARIO: (choose_user_scenario_handler,),
+                ReminderStrategyStates.MODULE: (get_module_handler,),
+                ReminderStrategyStates.SHIFT: (get_shift_handler,),
             },
-            fallbacks=(cancel_hendler, unexpected_err_handler),
+            fallbacks=(cancel_handler, unexpected_err_handler),
         )
     )

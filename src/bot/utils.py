@@ -52,7 +52,11 @@ def generate_inline_keyboard_scenarios(
         [
             InlineKeyboardButton(
                 "Back", callback_data=f"{ScenariosList.SCENARIO}@{CMD.MENU}"
-            )
+            ),
+            InlineKeyboardButton(
+                text="Add scenario",
+                callback_data=f"{ScenariosList.SCENARIO}@{CMD.CREATE_SCENARIO}",
+            ),
         ]
     )
 

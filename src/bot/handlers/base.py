@@ -25,9 +25,6 @@ async def send_menu(update: Update, _):
 
     buttons = [
         [
-            InlineKeyboardButton(
-                text="Add scenario", callback_data=CMD.CREATE_SCENARIO
-            ),
             InlineKeyboardButton(text="Scenarios", callback_data=CMD.SCENARIOS_LIST),
         ],
     ]

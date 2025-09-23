@@ -1,3 +1,4 @@
+from sqlalchemy.engine.interfaces import SchemaTranslateMapType
 from telegram import Update
 from telegram.ext import CallbackQueryHandler
 from telegram.ext import ContextTypes
@@ -7,7 +8,7 @@ from telegram.ext import filters
 
 from src.bot.constants.commands_text import CMD
 from src.bot.constants.conversation_states import END
-from src.bot.constants.conversation_states import Base
+from src.bot.constants.conversation_states import Menu
 from src.bot.constants.conversation_states import Scenario
 from src.bot.constants.conversation_states import ScenariosList
 from src.bot.constants.user_data_keys import UDK
@@ -58,6 +59,7 @@ async def choose_scenario(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 
 async def create_scenario(update: Update, _) -> int:
+    await update.callback_query.answer()
     reply_text = "Into next message send the scenario name."
     await update.callback_query.edit_message_text(reply_text)
     return Scenario.NAME
@@ -77,14 +79,14 @@ async def get_scenario_name(update: Update, _) -> int:
 create_scenario_conv_handler = ConversationHandler(
     entry_points=[
         CallbackQueryHandler(
-            create_scenario, pattern="^" + str(CMD.CREATE_SCENARIO) + "$"
+            create_scenario, pattern=f"{ScenariosList.SCENARIO}@{CMD.CREATE_SCENARIO}"
         )
     ],
     states={
         Scenario.NAME: [MessageHandler(filters.TEXT, get_scenario_name)],
     },
     fallbacks=[cancel_handler, unexpected_err_handler],
-    map_to_parent={END: Base.CHOOSING_OPTION},
+    map_to_parent={END: END},
 )
 
 scenarios_handler = ConversationHandler(
@@ -98,8 +100,9 @@ scenarios_handler = ConversationHandler(
             CallbackQueryHandler(
                 choose_scenario, pattern=rf"^{ScenariosList.SCENARIO}@(\d*|{CMD.MENU})$"
             ),
+            create_scenario_conv_handler,
         ],
     },
     fallbacks=[cancel_handler, unexpected_err_handler],
-    map_to_parent={END: Base.CHOOSING_OPTION},
+    map_to_parent={END: Menu.CHOOSING_OPTION},
 )

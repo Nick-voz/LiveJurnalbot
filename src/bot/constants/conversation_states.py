@@ -26,7 +26,7 @@ class RecordStates(IntEnum):
     VALUE = auto()
 
 
-class Base(IntEnum):
+class Menu(IntEnum):
     CREATE_SCENARIO = auto()
     CHOOSING_OPTION = auto()
 

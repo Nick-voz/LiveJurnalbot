@@ -30,7 +30,7 @@ async def menu(update: Update, _) -> int:
 menu_handler = CommandHandler(CMD.MENU, menu)
 menu_conv_handler = ConversationHandler(
     entry_points=[menu_handler],
-    states={Base.CHOOSING_OPTION: [create_scenario_conv_handler, scenarios_handler]},
+    states={Base.CHOOSING_OPTION: [scenarios_handler]},
     fallbacks=[cancel_handler, unexpected_err_handler],
 )
 

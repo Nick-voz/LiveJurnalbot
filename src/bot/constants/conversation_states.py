@@ -29,3 +29,8 @@ class RecordStates(IntEnum):
 class Base(IntEnum):
     CREATE_SCENARIO = auto()
     CHOOSING_OPTION = auto()
+
+
+class ScenariosList(IntEnum):
+    SCENARIO = auto()
+    OPTION = auto()

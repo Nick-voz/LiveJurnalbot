@@ -28,6 +28,7 @@ async def send_menu(update: Update, _):
             InlineKeyboardButton(
                 text="Add scenario", callback_data=CMD.CREATE_SCENARIO
             ),
+            InlineKeyboardButton(text="Scenarios", callback_data=CMD.SCENARIOS_LIST),
         ],
     ]
     keyboard = InlineKeyboardMarkup(buttons)
@@ -35,7 +36,7 @@ async def send_menu(update: Update, _):
     if update.message is not None:
         await update.message.reply_text(reply_text, reply_markup=keyboard)
     else:
-        await update.inline_query.message(reply_text, reply_markup=keyboard)
+        await update.callback_query.edit_message_text(reply_text, reply_markup=keyboard)
 
 
 unexpected_err_handler = MessageHandler(filters.ALL, unexpected_err)

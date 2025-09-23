@@ -2,7 +2,7 @@ import os
 
 from telegram.ext import ApplicationBuilder
 
-from src.bot.hendlers import register
+from src.bot.handlers import register
 
 TOKEN = os.getenv("BOT_TOKEN")
 

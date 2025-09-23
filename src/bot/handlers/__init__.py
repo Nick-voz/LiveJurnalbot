@@ -6,11 +6,9 @@ from src.bot.handlers.records import register as records_register
 from src.bot.handlers.reminder_strategies import (
     register as reminder_strategies_register,
 )
-from src.bot.handlers.scenarios import register as scenarios_register
 
 
 def register(app: Application):
-    scenarios_register(app)
     reminder_strategies_register(app)
     parametrs_register(app)
     records_register(app)

@@ -2,6 +2,7 @@ from typing import Iterable
 
 from sqlalchemy import Select
 from sqlalchemy.orm import Session
+from telegram import UsersShared
 
 from src.db.models import Parametr
 from src.db.models import ReminderStrategy
@@ -95,6 +96,15 @@ def get_user_scenarios_by_chat(chat_id: int) -> Iterable["UserScenario"]:
         scenarios = s.scalars(selector).all()
 
     return scenarios
+
+
+def get_user_scenario_by_id(_id: int) -> UserScenario:
+    selector = Select(UserScenario).where(UserScenario.id == _id)
+
+    with Session(engine) as s:
+        scenario = s.scalars(selector).one()
+
+    return scenario
 
 
 def create_reminder_strategy(user_scenario: UserScenario) -> ReminderStrategy:

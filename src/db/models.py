@@ -34,6 +34,7 @@ class Scenario(BaseModel):
     name: Mapped[str] = mapped_column(String(30), nullable=False)
 
 
+# pylint: disable={E1136} # unsubscriptable-object for Mapped[int] IDK why
 class UserScenario(BaseModel):
     __tablename__ = "user_scenarios"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -69,6 +70,8 @@ class Record(BaseModel):
     value: Mapped[float]
     datetime: Mapped[DateTime] = mapped_column(DateTime(timezone=True))
 
+
+# pylint: enable={E1136}
 
 # BaseModel.metadata.drop_all(engine)
 BaseModel.metadata.create_all(engine)

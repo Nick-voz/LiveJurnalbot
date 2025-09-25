@@ -40,22 +40,16 @@ def generate_inline_keyboard_scenarios(
         buttons_batch = []
         for e in batch:
             name = e.scenario.name
-            _id = e.id
-            buttons_batch.append(
-                InlineKeyboardButton(
-                    f"{name}", callback_data=f"{ScenariosList.SCENARIO}@{_id}"
-                )
-            )
+            _id: int = e.id
+            buttons_batch.append(InlineKeyboardButton(name, callback_data=str(_id)))
         keybord.append(buttons_batch)
 
     keybord.append(
         [
+            InlineKeyboardButton("Back", callback_data=CMD.MENU),
             InlineKeyboardButton(
-                "Back", callback_data=f"{ScenariosList.SCENARIO}@{CMD.MENU}"
-            ),
-            InlineKeyboardButton(
-                text="Add scenario",
-                callback_data=f"{ScenariosList.SCENARIO}@{CMD.CREATE_SCENARIO}",
+                "Add scenario",
+                callback_data=CMD.CREATE_SCENARIO,
             ),
         ]
     )
@@ -67,7 +61,9 @@ def generate_inline_keyboard_scenario_options() -> InlineKeyboardMarkup:
     keyboard = []
 
     keyboard.append(
-        [InlineKeyboardButton("back", callback_data=ScenariosList.SCENARIO)]
+        [
+            InlineKeyboardButton("bruh", callback_data="bruh"),
+        ]
     )
 
     return InlineKeyboardMarkup(keyboard)

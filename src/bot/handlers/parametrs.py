@@ -43,13 +43,13 @@ async def choose_user_scenario(
         return ParametrStates.USER_SCENARIO
 
     await query.edit_message_text("Send name for the parametr")
-    context.user_data[UDK.USER_SCENARIO] = user_scenio
+    context.user_data[UDK.USER_SCENARIO_ID] = user_scenio
 
     return ParametrStates.NAME
 
 
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    scenario: UserScenario = context.user_data.get(UDK.USER_SCENARIO)
+    scenario: UserScenario = context.user_data.get(UDK.USER_SCENARIO_ID)
     if scenario is None:
         await update.message.reply_text("something want wrong")
         return END

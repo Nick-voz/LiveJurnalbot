@@ -4,7 +4,7 @@ from telegram.ext import CommandHandler
 from telegram.ext import ConversationHandler
 
 from src.bot.constants.commands_text import CMD
-from src.bot.constants.conversation_states import Base
+from src.bot.constants.conversation_states import Menu
 from src.bot.handlers.base import cancel_handler
 from src.bot.handlers.base import send_menu
 from src.bot.handlers.base import unexpected_err_handler
@@ -24,13 +24,13 @@ def remember_user_if_not_yet(chat_id: int) -> None:
 async def menu(update: Update, _) -> int:
     remember_user_if_not_yet(update.effective_chat.id)
     await send_menu(update, _)
-    return Base.CHOOSING_OPTION
+    return Menu.CHOOSING_OPTION
 
 
 menu_handler = CommandHandler(CMD.MENU, menu)
 menu_conv_handler = ConversationHandler(
     entry_points=[menu_handler],
-    states={Base.CHOOSING_OPTION: [scenarios_handler]},
+    states={Menu.CHOOSING_OPTION: [scenarios_handler]},
     fallbacks=[cancel_handler, unexpected_err_handler],
 )
 

@@ -53,7 +53,7 @@ async def choose_user_scenario(
 
     await query.edit_message_text("choose parametr", reply_markup=reply_markup)
 
-    context.user_data[UDK.USER_SCENARIO] = user_scenio
+    context.user_data[UDK.USER_SCENARIO_ID] = user_scenio
 
     return ParametrStates.NAME
 
@@ -61,7 +61,7 @@ async def choose_user_scenario(
 async def choose_parametr(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
-    user_scenio = context.user_data.get(UDK.USER_SCENARIO)
+    user_scenio = context.user_data.get(UDK.USER_SCENARIO_ID)
     parametr_name = query.data
 
     if user_scenio is None:

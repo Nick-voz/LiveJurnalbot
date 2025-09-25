@@ -1,5 +1,3 @@
-from os import umask
-
 from telegram import InlineKeyboardButton
 from telegram import InlineKeyboardMarkup
 from telegram import Update

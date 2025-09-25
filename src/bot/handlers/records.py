@@ -17,8 +17,8 @@ from src.bot.constants.conversation_states import RecordStates
 from src.bot.constants.user_data_keys import UDK
 from src.bot.handlers.base import cancel_handler
 from src.bot.handlers.base import unexpected_err_handler
-from src.bot.utils import generate_inline_keyboard_parametrs
-from src.bot.utils import generate_inline_keyboard_user_scenarios
+from src.bot.keyboards.parametrs import get_keyboard_parametrs
+from src.bot.keyboards.scenarios import get_keyboard_scenarios
 from src.db.models import Parametr
 from src.db.models import Record
 from src.db.repository import find_user_scenario_by_name
@@ -29,7 +29,7 @@ from src.db.repository import get_user_scenarios_by_chat
 async def start_add_record_conv(update: Update, _) -> int:
     user_scenarios = get_user_scenarios_by_chat(chat_id=update.effective_chat.id)
 
-    reply_markup = generate_inline_keyboard_user_scenarios(user_scenarios)
+    reply_markup = get_keyboard_scenarios(user_scenarios)
 
     await update.message.reply_text("Select scenario", reply_markup=reply_markup)
     return RecordStates.USER_SCENARIO
@@ -49,7 +49,7 @@ async def choose_user_scenario(
 
     parametrs = get_user_scenario_parametrs(user_scenio)
 
-    reply_markup = generate_inline_keyboard_parametrs(parametrs)
+    reply_markup = get_keyboard_parametrs(parametrs)
 
     await query.edit_message_text("choose parametr", reply_markup=reply_markup)
 

@@ -13,7 +13,7 @@ from src.bot.constants.conversation_states import ReminderStrategyStates
 from src.bot.constants.user_data_keys import UDK
 from src.bot.handlers.base import cancel_handler
 from src.bot.handlers.base import unexpected_err_handler
-from src.bot.utils import generate_inline_keyboard_user_scenarios
+from src.bot.keyboards.scenarios import get_keyboard_scenarios
 from src.db.models import ReminderStrategy
 from src.db.repository import find_or_create_reminder_strategy
 from src.db.repository import find_user_scenario_by_name
@@ -22,7 +22,7 @@ from src.db.repository import get_user_scenarios_by_chat
 
 async def start_reminder_strategy_conv(update: Update, _) -> int:
     user_scenarios = get_user_scenarios_by_chat(chat_id=update.effective_chat.id)
-    reply_markup = generate_inline_keyboard_user_scenarios(user_scenarios)
+    reply_markup = get_keyboard_scenarios(user_scenarios)
     await update.message.reply_text("Select scenario", reply_markup=reply_markup)
     return ReminderStrategyStates.USER_SCENARIO
 

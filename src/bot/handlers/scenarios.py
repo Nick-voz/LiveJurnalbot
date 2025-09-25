@@ -14,8 +14,8 @@ from src.bot.constants.user_data_keys import UDK
 from src.bot.handlers.base import cancel_handler
 from src.bot.handlers.base import send_menu
 from src.bot.handlers.base import unexpected_err_handler
-from src.bot.utils import generate_inline_keyboard_scenario_options
-from src.bot.utils import generate_inline_keyboard_scenarios
+from src.bot.keyboards.scenarios import get_keyboard_scenario_options
+from src.bot.keyboards.scenarios import get_keyboard_scenarios
 from src.db.repository import create_user_scenario
 from src.db.repository import get_user_scenario_by_id
 from src.db.repository import get_user_scenarios_by_chat
@@ -27,7 +27,7 @@ async def get_my_scenarios(update: Update, _) -> int:
     scenarios = get_user_scenarios_by_chat(chat_id)
 
     reply_text = "Chose scenario to interact or tup back to menu."
-    reply_markup = generate_inline_keyboard_scenarios(scenarios)
+    reply_markup = get_keyboard_scenarios(scenarios)
 
     await update.callback_query.edit_message_text(reply_text, reply_markup=reply_markup)
 
@@ -46,7 +46,7 @@ async def choose_scenario(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     scenario = get_user_scenario_by_id(scenario_id)
 
     reply_text = f"Chose option for scenario: {scenario.scenario.name}"
-    reply_markup = generate_inline_keyboard_scenario_options()
+    reply_markup = get_keyboard_scenario_options()
     await update.callback_query.edit_message_text(reply_text, reply_markup=reply_markup)
 
     await update.callback_query.answer()

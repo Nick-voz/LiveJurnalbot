@@ -8,7 +8,6 @@ from src.bot.constants.conversation_states import Menu
 from src.bot.handlers.base import cancel_handler
 from src.bot.handlers.base import send_menu
 from src.bot.handlers.base import unexpected_err_handler
-from src.bot.handlers.scenarios import create_scenario_conv_handler
 from src.bot.handlers.scenarios import scenarios_handler
 from src.db.repository import create_user
 from src.db.repository import get_user_by_chat

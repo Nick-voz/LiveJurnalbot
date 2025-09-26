@@ -25,6 +25,8 @@ from src.db.repository import find_user_scenario_by_name
 from src.db.repository import get_user_scenario_parametrs
 from src.db.repository import get_user_scenarios_by_chat
 
+# Core async handlers (unchanged logic)
+
 
 async def start_add_record_conv(update: Update, _) -> int:
     user_scenarios = get_user_scenarios_by_chat(chat_id=update.effective_chat.id)
@@ -100,21 +102,39 @@ async def get_value(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return END
 
 
-start_add_record_conv_handler = CommandHandler(CMD.CREATE_RECORD, start_add_record_conv)
-choose_user_scenario_handler = CallbackQueryHandler(choose_user_scenario)
-choose_parametr_handler = CallbackQueryHandler(choose_parametr)
-get_value_handler = MessageHandler(filters.TEXT, get_value)
+# Builders for handlers
+
+
+def build_start_add_record_command_handler():
+    return CommandHandler(CMD.CREATE_RECORD, start_add_record_conv)
+
+
+def build_choose_user_scenario_handler():
+    return CallbackQueryHandler(choose_user_scenario)
+
+
+def build_choose_parametr_handler():
+    return CallbackQueryHandler(choose_parametr)
+
+
+def build_get_value_handler():
+    return MessageHandler(filters.TEXT, get_value)
+
+
+def build_conversation_handler():
+    return ConversationHandler(
+        entry_points=(build_start_add_record_command_handler(),),
+        states={
+            RecordStates.USER_SCENARIO: (build_choose_user_scenario_handler(),),
+            RecordStates.PARAMETR: (build_choose_parametr_handler(),),
+            RecordStates.VALUE: (build_get_value_handler(),),
+        },
+        fallbacks=(cancel_handler, unexpected_err_handler),
+    )
+
+
+# Public registrar
 
 
 def register(app: Application):
-    app.add_handler(
-        ConversationHandler(
-            entry_points=(start_add_record_conv_handler,),
-            states={
-                RecordStates.USER_SCENARIO: (choose_user_scenario_handler,),
-                RecordStates.PARAMETR: (choose_parametr_handler,),
-                RecordStates.VALUE: (get_value_handler,),
-            },
-            fallbacks=(cancel_handler, unexpected_err_handler),
-        )
-    )
+    app.add_handler(build_conversation_handler())

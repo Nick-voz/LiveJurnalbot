@@ -84,21 +84,36 @@ async def get_default_value(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     return END
 
 
-start_strategy_conv_handler = CommandHandler("set_parametr", start_create_parametr_conv)
-choose_user_scenario_handler = CallbackQueryHandler(choose_user_scenario)
-get_name_handler = MessageHandler(filters.TEXT, get_name)
-get_default_handler = MessageHandler(filters.TEXT, get_default_value)
+# Builders for individual handlers
+
+
+def build_start_parametr_command_handler():
+    return CommandHandler("set_parametr", start_create_parametr_conv)
+
+
+def build_choose_user_scenario_handler():
+    return CallbackQueryHandler(choose_user_scenario)
+
+
+def build_name_text_handler():
+    return MessageHandler(filters.TEXT, get_name)
+
+
+def build_default_value_text_handler():
+    return MessageHandler(filters.TEXT, get_default_value)
+
+
+def build_conversation_handler():
+    return ConversationHandler(
+        entry_points=(build_start_parametr_command_handler(),),
+        states={
+            ParametrStates.USER_SCENARIO: (build_choose_user_scenario_handler(),),
+            ParametrStates.NAME: (build_name_text_handler(),),
+            ParametrStates.DEFAULT_VALUE: (build_default_value_text_handler(),),
+        },
+        fallbacks=(cancel_handler, unexpected_err_handler),
+    )
 
 
 def register(app: Application):
-    app.add_handler(
-        ConversationHandler(
-            entry_points=(start_strategy_conv_handler,),
-            states={
-                ParametrStates.USER_SCENARIO: (choose_user_scenario_handler,),
-                ParametrStates.NAME: (get_name_handler,),
-                ParametrStates.DEFAULT_VALUE: (get_default_handler,),
-            },
-            fallbacks=(cancel_handler, unexpected_err_handler),
-        )
-    )
+    app.add_handler(build_conversation_handler())

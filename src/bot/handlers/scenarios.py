@@ -21,7 +21,7 @@ from src.db.repository import get_user_scenario_by_id
 from src.db.repository import get_user_scenarios_by_chat
 
 
-async def get_my_scenarios(update: Update, _) -> int:
+async def get_my_scenarios(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     await update.callback_query.answer()
     chat_id = update.callback_query.message.chat.id
     scenarios = get_user_scenarios_by_chat(chat_id)
@@ -53,20 +53,20 @@ async def choose_scenario(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     return ScenariosList.OPTION
 
 
-async def choose_option(update: Update, _) -> int:
-    await update.callback_query.edit_message_text("bruh")
+async def choose_option(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
+    await send_menu(update, _)
     await update.callback_query.answer()
     return END
 
 
-async def create_scenario(update: Update, _) -> int:
+async def create_scenario(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     await update.callback_query.answer()
     reply_text = "Into next message send the scenario name."
     await update.callback_query.edit_message_text(reply_text)
     return Scenario.NAME
 
 
-async def get_scenario_name(update: Update, _) -> int:
+async def get_scenario_name(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     chat_id = update.effective_chat.id
     name = update.message.text
     create_user_scenario(chat_id=chat_id, name=name)
@@ -77,29 +77,62 @@ async def get_scenario_name(update: Update, _) -> int:
     return END
 
 
-create_scenario_conv_handler = ConversationHandler(
-    entry_points=[CallbackQueryHandler(create_scenario, pattern=CMD.CREATE_SCENARIO)],
-    states={
-        Scenario.NAME: [MessageHandler(filters.TEXT, get_scenario_name)],
-    },
-    fallbacks=[cancel_handler, unexpected_err_handler],
-    map_to_parent={END: END},
-)
+# Builders (factory-style constructors) for handlers
 
-scenarios_handler = ConversationHandler(
-    entry_points=[
-        CallbackQueryHandler(get_my_scenarios, pattern=rf"^{CMD.SCENARIOS_LIST}$")
-    ],
-    states={
-        ScenariosList.SCENARIO: [
-            CallbackQueryHandler(choose_scenario, pattern=r"^\d*$"),
-            CallbackQueryHandler(back, pattern=rf"^{CMD.MENU}$"),
-            create_scenario_conv_handler,
+
+def build_get_my_scenarios_handler():
+    return CallbackQueryHandler(get_my_scenarios, pattern=rf"^{CMD.SCENARIOS_LIST}$")
+
+
+def build_back_handler():
+    return CallbackQueryHandler(back, pattern=rf"^{CMD.MENU}$")
+
+
+def build_choose_scenario_handler():
+    return CallbackQueryHandler(choose_scenario, pattern=r"^\d*$")
+
+
+def build_choose_option_handler():
+    return CallbackQueryHandler(choose_option, pattern=r"^bruh$")
+
+
+def build_create_scenario_handler():
+    # Entry point and nested state machine for creating a scenario
+    return ConversationHandler(
+        entry_points=[
+            CallbackQueryHandler(create_scenario, pattern=CMD.CREATE_SCENARIO)
         ],
-        ScenariosList.OPTION: [
-            CallbackQueryHandler(choose_option, pattern=r"^bruh$"),
-        ],
-    },
-    fallbacks=[cancel_handler, unexpected_err_handler],
-    map_to_parent={END: Menu.CHOOSING_OPTION},
-)
+        states={
+            Scenario.NAME: [MessageHandler(filters.TEXT, get_scenario_name)],
+        },
+        fallbacks=[cancel_handler, unexpected_err_handler],
+        map_to_parent={END: END},
+    )
+
+
+# Top-level builders for the full conversation handlers
+
+
+def build_scenarios_handler():
+    create_scenario_conv_handler = build_create_scenario_handler()
+
+    return ConversationHandler(
+        entry_points=[build_get_my_scenarios_handler()],
+        states={
+            ScenariosList.SCENARIO: [
+                build_choose_scenario_handler(),
+                build_back_handler(),
+                create_scenario_conv_handler,
+            ],
+            ScenariosList.OPTION: [
+                build_choose_option_handler(),
+            ],
+        },
+        fallbacks=[cancel_handler, unexpected_err_handler],
+        map_to_parent={END: Menu.CHOOSING_OPTION},
+    )
+
+
+create_scenario_conv_handler = build_create_scenario_handler()
+
+scenarios_handler = build_scenarios_handler()

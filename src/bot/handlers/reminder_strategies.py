@@ -82,23 +82,41 @@ async def get_shift(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return END
 
 
-start_strategy_conv_handler = CommandHandler(
-    CMD.CREATE_STRATEGY, start_reminder_strategy_conv
-)
-choose_user_scenario_handler = CallbackQueryHandler(choose_user_scenario)
-get_module_handler = MessageHandler(filters.TEXT, get_module)
-get_shift_handler = MessageHandler(filters.TEXT, get_shift)
+# Builders for individual handlers
+
+
+def build_start_strategy_command_handler():
+    return CommandHandler(CMD.CREATE_STRATEGY, start_reminder_strategy_conv)
+
+
+def build_choose_user_scenario_handler():
+    return CallbackQueryHandler(choose_user_scenario)
+
+
+def build_module_text_handler():
+    return MessageHandler(filters.TEXT, get_module)
+
+
+def build_shift_text_handler():
+    return MessageHandler(filters.TEXT, get_shift)
+
+
+def build_conversation_handler():
+    return ConversationHandler(
+        entry_points=(build_start_strategy_command_handler(),),
+        states={
+            ReminderStrategyStates.USER_SCENARIO: (
+                build_choose_user_scenario_handler(),
+            ),
+            ReminderStrategyStates.MODULE: (build_module_text_handler(),),
+            ReminderStrategyStates.SHIFT: (build_shift_text_handler(),),
+        },
+        fallbacks=(cancel_handler, unexpected_err_handler),
+    )
+
+
+# Public registrar
 
 
 def register(app: Application):
-    app.add_handler(
-        ConversationHandler(
-            entry_points=(start_strategy_conv_handler,),
-            states={
-                ReminderStrategyStates.USER_SCENARIO: (choose_user_scenario_handler,),
-                ReminderStrategyStates.MODULE: (get_module_handler,),
-                ReminderStrategyStates.SHIFT: (get_shift_handler,),
-            },
-            fallbacks=(cancel_handler, unexpected_err_handler),
-        )
-    )
+    app.add_handler(build_conversation_handler())

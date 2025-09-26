@@ -18,7 +18,7 @@ async def cancel(update: Update, _) -> int:
     return END
 
 
-async def send_menu(update: Update, _):
+async def send_menu(update: Update, _) -> None:
     reply_text = f"Hellow {update.effective_chat.first_name}"
 
     buttons = [
@@ -34,5 +34,18 @@ async def send_menu(update: Update, _):
         await update.callback_query.edit_message_text(reply_text, reply_markup=keyboard)
 
 
-unexpected_err_handler = MessageHandler(filters.ALL, unexpected_err)
-cancel_handler = CommandHandler(CMD.CANCEL, cancel)
+# Builders for handlers (optional, keeps pattern consistent with other modules)
+
+
+def build_unexpected_err_handler() -> MessageHandler:
+    return MessageHandler(filters.ALL, unexpected_err)
+
+
+def build_cancel_handler() -> CommandHandler:
+    return CommandHandler(CMD.CANCEL, cancel)
+
+
+# Public exports / registration
+
+unexpected_err_handler = build_unexpected_err_handler()
+cancel_handler = build_cancel_handler()

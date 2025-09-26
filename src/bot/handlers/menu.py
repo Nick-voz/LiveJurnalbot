@@ -26,13 +26,18 @@ async def menu(update: Update, _) -> int:
     return Menu.CHOOSING_OPTION
 
 
-menu_handler = CommandHandler(CMD.MENU, menu)
-menu_conv_handler = ConversationHandler(
-    entry_points=[menu_handler],
-    states={Menu.CHOOSING_OPTION: [scenarios_handler]},
-    fallbacks=[cancel_handler, unexpected_err_handler],
-)
+# Builder: create the top-level menu conversation handler
+def build_menu_conversation_handler() -> ConversationHandler:
+    menu_handler = CommandHandler(CMD.MENU, menu)
+
+    return ConversationHandler(
+        entry_points=[menu_handler],
+        states={
+            Menu.CHOOSING_OPTION: [scenarios_handler],
+        },
+        fallbacks=[cancel_handler, unexpected_err_handler],
+    )
 
 
 def register(app: Application):
-    app.add_handler(menu_conv_handler)
+    app.add_handler(build_menu_conversation_handler())

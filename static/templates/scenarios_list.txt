@@ -1,3 +1,0 @@
-Your scenarios:
-{% for s in scenarios %}{{s.scenario.name}}
-{% endfor %}

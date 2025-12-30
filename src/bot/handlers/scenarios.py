@@ -23,11 +23,16 @@ from src.db.repository import get_user_scenario_by_id
 from src.db.repository import get_user_scenarios_by_chat
 
 
-async def send_scenarios_list(update: Update) -> None:
-    chat_id = update.callback_query.message.chat.id
+def prepare_scenarios_list(chat_id):
     scenarios = get_user_scenarios_by_chat(chat_id)
     reply_text = "Choose scenario to interact or tap back to menu."
     reply_markup = get_keyboard_scenarios(scenarios)
+    return reply_text, reply_markup
+
+
+async def send_scenarios_list(update: Update) -> None:
+    chat_id = update.callback_query.message.chat.id
+    reply_text, reply_markup = prepare_scenarios_list(chat_id)
     await update.callback_query.edit_message_text(reply_text, reply_markup=reply_markup)
 
 
@@ -110,8 +115,9 @@ async def get_scenario_name(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int
     await update.message.reply_text(
         f"scenario with name: '{name}' was added to your scenarios"
     )
-    await send_menu(update, _)
-    return END
+    reply_text, reply_markup = prepare_scenarios_list(chat_id)
+    await update.message.reply_text(reply_text, reply_markup=reply_markup)
+    return ScenariosList.SCENARIO
 
 
 # Builders (factory-style constructors) for handlers
@@ -159,7 +165,7 @@ def build_create_scenario_handler():
             Scenario.NAME: [MessageHandler(filters.TEXT, get_scenario_name)],
         },
         fallbacks=[cancel_handler, unexpected_err_handler],
-        map_to_parent={END: END},
+        map_to_parent={END: ScenariosList.SCENARIO},
     )
 
 
@@ -193,7 +199,5 @@ def build_scenarios_handler():
         map_to_parent={END: Menu.CHOOSING_OPTION},
     )
 
-
-create_scenario_conv_handler = build_create_scenario_handler()
 
 scenarios_handler = build_scenarios_handler()

@@ -19,14 +19,13 @@ async def cancel(update: Update, _) -> int:
 
 
 async def send_menu(update: Update, _) -> None:
-    reply_text = f"Hellow {update.effective_chat.first_name}"
-
     buttons = [
         [
             InlineKeyboardButton(text="Scenarios", callback_data=CMD.SCENARIOS_LIST),
         ],
     ]
     keyboard = InlineKeyboardMarkup(buttons)
+    reply_text = "Choose an option:"
 
     if update.message is not None:
         await update.message.reply_text(reply_text, reply_markup=keyboard)

@@ -6,3 +6,8 @@ class CMD:
     CREATE_STRATEGY = "set_strateg"
     CREATE_SCENARIO = "create_scenario"
     SCENARIOS_LIST = "get_my_scenarios"
+    DELETE_SCENARIO = "delete_scenario"
+    FILL_SCENARIO = "fill_scenario"
+    EDIT_SCENARIO = "edit_scenario"
+    CONFIRM = "confirm"
+    DENY = "deny"

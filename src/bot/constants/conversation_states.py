@@ -34,3 +34,4 @@ class Menu(IntEnum):
 class ScenariosList(IntEnum):
     SCENARIO = auto()
     OPTION = auto()
+    DELETE_CONFIRM = auto()

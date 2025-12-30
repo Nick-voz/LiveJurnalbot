@@ -14,9 +14,11 @@ from src.bot.constants.user_data_keys import UDK
 from src.bot.handlers.base import cancel_handler
 from src.bot.handlers.base import send_menu
 from src.bot.handlers.base import unexpected_err_handler
+from src.bot.keyboards.scenarios import get_keyboard_delete_confirmation
 from src.bot.keyboards.scenarios import get_keyboard_scenario_options
 from src.bot.keyboards.scenarios import get_keyboard_scenarios
 from src.db.repository import create_user_scenario
+from src.db.repository import delete_user_scenario_by_id
 from src.db.repository import get_user_scenario_by_id
 from src.db.repository import get_user_scenarios_by_chat
 
@@ -53,10 +55,45 @@ async def choose_scenario(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     return ScenariosList.OPTION
 
 
-async def choose_option(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
-    await send_menu(update, _)
+async def delete_scenario(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.callback_query.answer()
+    scenario_id = context.user_data[UDK.USER_SCENARIO_ID]
+    scenario = get_user_scenario_by_id(scenario_id)
+    reply_text = f"Are you sure you want to delete scenario '{scenario.scenario.name}'?"
+    reply_markup = get_keyboard_delete_confirmation()
+    await update.callback_query.edit_message_text(reply_text, reply_markup=reply_markup)
+    return ScenariosList.DELETE_CONFIRM
+
+
+async def fill_scenario(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
+    await update.callback_query.answer()
+    await update.callback_query.edit_message_text("Fill (Add Record) selected")
     return END
+
+
+async def edit_scenario(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
+    await update.callback_query.answer()
+    await update.callback_query.edit_message_text("Edit selected")
+    return END
+
+
+async def confirm_delete(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    await update.callback_query.answer()
+    scenario_id = context.user_data[UDK.USER_SCENARIO_ID]
+    delete_user_scenario_by_id(scenario_id)
+    await update.callback_query.edit_message_text("Scenario deleted successfully.")
+    await send_menu(update, context)
+    return END
+
+
+async def cancel_delete(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    await update.callback_query.answer()
+    scenario_id = context.user_data[UDK.USER_SCENARIO_ID]
+    scenario = get_user_scenario_by_id(scenario_id)
+    reply_text = f"Chose option for scenario: {scenario.scenario.name}"
+    reply_markup = get_keyboard_scenario_options()
+    await update.callback_query.edit_message_text(reply_text, reply_markup=reply_markup)
+    return ScenariosList.OPTION
 
 
 async def create_scenario(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
@@ -92,8 +129,24 @@ def build_choose_scenario_handler():
     return CallbackQueryHandler(choose_scenario, pattern=r"^\d*$")
 
 
-def build_choose_option_handler():
-    return CallbackQueryHandler(choose_option, pattern=r"^bruh$")
+def build_delete_scenario_handler():
+    return CallbackQueryHandler(delete_scenario, pattern=rf"^{CMD.DELETE_SCENARIO}$")
+
+
+def build_fill_scenario_handler():
+    return CallbackQueryHandler(fill_scenario, pattern=rf"^{CMD.FILL_SCENARIO}$")
+
+
+def build_edit_scenario_handler():
+    return CallbackQueryHandler(edit_scenario, pattern=rf"^{CMD.EDIT_SCENARIO}$")
+
+
+def build_confirm_delete_handler():
+    return CallbackQueryHandler(confirm_delete, pattern=rf"^{CMD.CONFIRM}$")
+
+
+def build_cancel_delete_handler():
+    return CallbackQueryHandler(cancel_delete, pattern=rf"^{CMD.DENY}$")
 
 
 def build_create_scenario_handler():
@@ -125,7 +178,15 @@ def build_scenarios_handler():
                 create_scenario_conv_handler,
             ],
             ScenariosList.OPTION: [
-                build_choose_option_handler(),
+                build_delete_scenario_handler(),
+                build_fill_scenario_handler(),
+                build_edit_scenario_handler(),
+                build_back_handler(),
+            ],
+            ScenariosList.DELETE_CONFIRM: [
+                build_confirm_delete_handler(),
+                build_cancel_delete_handler(),
+                build_back_handler(),
             ],
         },
         fallbacks=[cancel_handler, unexpected_err_handler],

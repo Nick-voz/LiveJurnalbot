@@ -2,7 +2,6 @@ from typing import Iterable
 
 from sqlalchemy import Select
 from sqlalchemy.orm import Session
-from telegram import UsersShared
 
 from src.db.models import Parametr
 from src.db.models import ReminderStrategy
@@ -165,3 +164,12 @@ def get_user_scenario_parametrs(user_scenario: UserScenario) -> Iterable[Paramet
         parametrs = s.scalars(selector).all()
 
     return parametrs
+
+
+def delete_user_scenario_by_id(scenario_id):
+    selector = Select(UserScenario).where(UserScenario.id == scenario_id)
+    with Session(engine) as s:
+        user_scenario = s.scalars(selector).one_or_none()
+        if user_scenario:
+            s.delete(user_scenario)
+            s.commit()

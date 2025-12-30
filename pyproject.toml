@@ -1,6 +1,5 @@
 [tool.black]
 line-length = 88
-experimental-string-processing = true
 
 [tool.isort]
 line_length = 88
@@ -52,4 +51,13 @@ dependencies = [
     "python-dotenv>=1.1.0",
     "python-telegram-bot>=22.1",
     "sqlalchemy>=2.0.43",
+    "pytest>=8.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=24.0.0",
+    "isort>=5.13.0",
+    "pylint>=3.2.0",
+    "pyright>=1.1.0",
 ]

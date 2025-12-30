@@ -17,6 +17,8 @@ def create_user(chat_id) -> User:
     with Session(engine) as s:
         s.add(user)
         s.commit()
+        s.refresh(user)
+    return user
 
 
 def get_user_by_chat(chat_id: int) -> User | None:
@@ -42,10 +44,7 @@ def create_or_get_scenario(name: str) -> Scenario:
     with Session(engine) as s:
         s.add(scenario)
         s.commit()
-
-    scenario = find_scenario_by_name(name)
-    if scenario is None:
-        raise RuntimeError(f"something went wrong with scenario namede: {name}")
+        s.refresh(scenario)
 
     return scenario
 
@@ -84,8 +83,9 @@ def create_user_scenario(name: str, chat_id: int) -> UserScenario:
     with Session(engine) as s:
         s.add(user_scenario)
         s.commit()
+        s.refresh(user_scenario)
 
-    return find_user_scenario_by_name(name, chat_id)
+    return user_scenario
 
 
 def get_user_scenarios_by_chat(chat_id: int) -> Iterable["UserScenario"]:

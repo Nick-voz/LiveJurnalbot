@@ -113,6 +113,7 @@
 ### GIT
 
 - Do not make commits, till user ask u directly.
+- IMPORTANT: Never commit changes unless explicitly asked by the user. Wait for confirmation before committing.
 - All commit messages should follow "Conventional Commits" strategy.
 
 ### Messages

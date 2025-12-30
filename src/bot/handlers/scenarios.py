@@ -23,16 +23,17 @@ from src.db.repository import get_user_scenario_by_id
 from src.db.repository import get_user_scenarios_by_chat
 
 
-async def get_my_scenarios(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
-    await update.callback_query.answer()
+async def send_scenarios_list(update: Update) -> None:
     chat_id = update.callback_query.message.chat.id
     scenarios = get_user_scenarios_by_chat(chat_id)
-
-    reply_text = "Chose scenario to interact or tup back to menu."
+    reply_text = "Choose scenario to interact or tap back to menu."
     reply_markup = get_keyboard_scenarios(scenarios)
-
     await update.callback_query.edit_message_text(reply_text, reply_markup=reply_markup)
 
+
+async def get_my_scenarios(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
+    await update.callback_query.answer()
+    await send_scenarios_list(update)
     return ScenariosList.SCENARIO
 
 
@@ -81,9 +82,8 @@ async def confirm_delete(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     await update.callback_query.answer()
     scenario_id = context.user_data[UDK.USER_SCENARIO_ID]
     delete_user_scenario_by_id(scenario_id)
-    await update.callback_query.edit_message_text("Scenario deleted successfully.")
-    await send_menu(update, context)
-    return END
+    await send_scenarios_list(update)
+    return ScenariosList.SCENARIO
 
 
 async def cancel_delete(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:

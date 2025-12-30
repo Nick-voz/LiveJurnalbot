@@ -107,6 +107,7 @@ def build_create_scenario_handler():
         },
         fallbacks=[cancel_handler, unexpected_err_handler],
         map_to_parent={END: END},
+        per_message=True,
     )
 
 
@@ -130,6 +131,7 @@ def build_scenarios_handler():
         },
         fallbacks=[cancel_handler, unexpected_err_handler],
         map_to_parent={END: Menu.CHOOSING_OPTION},
+        per_message=True,
     )
 
 

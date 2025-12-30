@@ -112,6 +112,7 @@ def build_conversation_handler():
             ParametrStates.DEFAULT_VALUE: (build_default_value_text_handler(),),
         },
         fallbacks=(cancel_handler, unexpected_err_handler),
+        per_message=True,
     )
 
 

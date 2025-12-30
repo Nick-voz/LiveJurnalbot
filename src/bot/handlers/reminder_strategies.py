@@ -112,6 +112,7 @@ def build_conversation_handler():
             ReminderStrategyStates.SHIFT: (build_shift_text_handler(),),
         },
         fallbacks=(cancel_handler, unexpected_err_handler),
+        per_message=True,
     )
 
 

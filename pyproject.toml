@@ -1,5 +1,6 @@
 [tool.black]
 line-length = 88
+experimental-string-processing = true
 
 [tool.isort]
 line_length = 88

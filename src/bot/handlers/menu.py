@@ -13,6 +13,17 @@ from src.db.repository import create_user
 from src.db.repository import get_user_by_chat
 
 
+async def start(update: Update, _) -> None:
+    remember_user_if_not_yet(update.effective_chat.id)
+    reply_text = (
+        f"Hello {update.effective_chat.first_name}!\n\n"
+        "Welcome to LiveJurnalbot, your personal journaling assistant.\n"
+        "Track your daily parameters in custom scenarios (e.g., health, habits).\n\n"
+        "Use /menu to start managing your scenarios."
+    )
+    await update.message.reply_text(reply_text)
+
+
 def remember_user_if_not_yet(chat_id: int) -> None:
     user = get_user_by_chat(chat_id)
     if user is None:
@@ -40,4 +51,5 @@ def build_menu_conversation_handler() -> ConversationHandler:
 
 
 def register(app: Application):
+    app.add_handler(CommandHandler(CMD.START, start))
     app.add_handler(build_menu_conversation_handler())

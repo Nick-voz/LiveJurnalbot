@@ -130,7 +130,6 @@ def build_conversation_handler():
             RecordStates.VALUE: (build_get_value_handler(),),
         },
         fallbacks=(cancel_handler, unexpected_err_handler),
-        per_message=True,
     )
 
 

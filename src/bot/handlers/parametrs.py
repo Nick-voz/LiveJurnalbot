@@ -36,14 +36,14 @@ async def choose_user_scenario(
     await query.answer()
     name = query.data
     chat_id = update.effective_chat.id
-    user_scenio = find_user_scenario_by_name(name, chat_id)
+    user_scenario = find_user_scenario_by_name(name, chat_id)
 
-    if user_scenio is None:
-        await query.message.reply_text("try again")
+    if user_scenario is None:
+        await query.message.reply_text("Scenario not found. Please select again.")
         return ParametrStates.USER_SCENARIO
 
-    await query.edit_message_text("Send name for the parametr")
-    context.user_data[UDK.USER_SCENARIO_ID] = user_scenio
+    await query.edit_message_text("Send name for the parameter")
+    context.user_data[UDK.USER_SCENARIO_ID] = user_scenario
 
     return ParametrStates.NAME
 
@@ -51,17 +51,19 @@ async def choose_user_scenario(
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     scenario: UserScenario = context.user_data.get(UDK.USER_SCENARIO_ID)
     if scenario is None:
-        await update.message.reply_text("something want wrong")
+        await update.message.reply_text(
+            "An error occurred. Please restart the process."
+        )
         return END
 
-    try:
-        name = update.message.text
-    except ValueError:
+    param_name = update.message.text.strip()
+    if not param_name:
+        await update.message.reply_text("Invalid name. Please enter a non-empty name.")
         return ParametrStates.NAME
 
-    await update.message.reply_text("send default value for the parametr")
+    await update.message.reply_text("Send default value for the parameter")
 
-    parametr = find_or_create_parametr(scenario, name)
+    parametr = find_or_create_parametr(scenario, param_name)
     context.user_data[UDK.PARAMETR] = parametr
 
     return ParametrStates.DEFAULT_VALUE
@@ -70,16 +72,24 @@ async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 async def get_default_value(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     parametr: Parametr = context.user_data.get(UDK.PARAMETR)
     if parametr is None:
-        await update.message.reply_text("something want wrong")
+        await update.message.reply_text(
+            "An error occurred. Please restart the process."
+        )
         return END
 
     try:
-        parametr.default_value = float(update.message.text)
+        value = float(update.message.text)
+        if not 0 <= value <= 1000:
+            raise ValueError
+        parametr.default_value = value
     except ValueError:
+        await update.message.reply_text(
+            "Invalid value. Please enter a number between 0 and 1000."
+        )
         return ParametrStates.DEFAULT_VALUE
 
     parametr.save()
-    await update.message.reply_text("success")
+    await update.message.reply_text("Parameter created successfully.")
 
     return END
 

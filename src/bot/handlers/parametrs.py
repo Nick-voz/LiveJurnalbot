@@ -19,6 +19,24 @@ from src.db.repository import find_or_create_parametr
 from src.db.repository import find_user_scenario_by_name
 from src.db.repository import get_user_scenarios_by_chat
 
+# Utility functions
+
+
+def validate_param_name(text: str) -> str | None:
+    cleaned = text.strip()
+    return cleaned if cleaned else None
+
+
+def validate_and_set_default_value(text: str, parametr: Parametr) -> bool:
+    try:
+        value = float(text)
+        if not 0 <= value <= 1000:
+            return False
+        parametr.default_value = value
+        return True
+    except ValueError:
+        return False
+
 
 async def start_create_parametr_conv(update: Update, _) -> int:
     user_scenarios = get_user_scenarios_by_chat(chat_id=update.effective_chat.id)
@@ -34,9 +52,7 @@ async def choose_user_scenario(
 ) -> int:
     query = update.callback_query
     await query.answer()
-    name = query.data
-    chat_id = update.effective_chat.id
-    user_scenario = find_user_scenario_by_name(name, chat_id)
+    user_scenario = find_user_scenario_by_name(query.data, update.effective_chat.id)
 
     if user_scenario is None:
         await query.message.reply_text("Scenario not found. Please select again.")
@@ -56,8 +72,8 @@ async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         )
         return END
 
-    param_name = update.message.text.strip()
-    if not param_name:
+    param_name = validate_param_name(update.message.text)
+    if param_name is None:
         await update.message.reply_text("Invalid name. Please enter a non-empty name.")
         return ParametrStates.NAME
 
@@ -77,12 +93,7 @@ async def get_default_value(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         )
         return END
 
-    try:
-        value = float(update.message.text)
-        if not 0 <= value <= 1000:
-            raise ValueError
-        parametr.default_value = value
-    except ValueError:
+    if not validate_and_set_default_value(update.message.text, parametr):
         await update.message.reply_text(
             "Invalid value. Please enter a number between 0 and 1000."
         )

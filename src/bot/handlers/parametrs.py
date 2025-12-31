@@ -10,16 +10,18 @@ from telegram.ext import ConversationHandler
 from telegram.ext import MessageHandler
 from telegram.ext import filters
 
+from src.bot.constants.commands_text import CMD
 from src.bot.constants.conversation_states import END
 from src.bot.constants.conversation_states import ParametrStates
 from src.bot.constants.user_data_keys import UDK
 from src.bot.handlers.base import cancel_handler
 from src.bot.handlers.base import unexpected_err_handler
+from src.bot.keyboards.parametrs import get_continue_keyboard
 from src.bot.keyboards.scenarios import get_keyboard_scenarios
 from src.db.models import Parametr
 from src.db.models import UserScenario
 from src.db.repository import find_or_create_parametr
-from src.db.repository import find_user_scenario_by_name
+from src.db.repository import get_user_scenario_by_id
 from src.db.repository import get_user_scenarios_by_chat
 
 # Utility functions
@@ -69,7 +71,7 @@ async def choose_user_scenario(
 ) -> int:
     query = update.callback_query
     await query.answer()
-    user_scenario = find_user_scenario_by_name(query.data, update.effective_chat.id)
+    user_scenario = get_user_scenario_by_id(query.data)
 
     if user_scenario is None:
         await query.message.reply_text("Scenario not found. Please select again.")
@@ -117,9 +119,26 @@ async def get_default_value(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         return ParametrStates.DEFAULT_VALUE
 
     parametr.save()
-    await update.message.reply_text("Parameter created successfully.")
+    await update.message.reply_text(
+        "Parameter created successfully. Do you want to add another parameter?",
+        reply_markup=get_continue_keyboard(),
+    )
 
-    return END
+    return ParametrStates.CONTINUE
+
+
+async def handle_continue(update: Update, _) -> int:
+    query = update.callback_query
+    await query.answer()
+
+    if query.data == CMD.CONFIRM:
+        await query.edit_message_text("Send name for the parameter")
+        return ParametrStates.NAME
+    if query.data == CMD.DENY:
+        await query.edit_message_text("Parameter creation finished.")
+        return END
+    await query.edit_message_text("Invalid choice. Please try again.")
+    return ParametrStates.CONTINUE
 
 
 # Builders for individual handlers
@@ -141,6 +160,12 @@ def build_default_value_text_handler():
     return MessageHandler(filters.TEXT, get_default_value)
 
 
+def build_continue_handler():
+    return CallbackQueryHandler(
+        handle_continue, pattern=f"^({CMD.CONFIRM}|{CMD.DENY})$"
+    )
+
+
 def build_parametr_conversation_handler():
     return ConversationHandler(
         entry_points=(build_start_parametr_command_handler(),),
@@ -148,6 +173,7 @@ def build_parametr_conversation_handler():
             ParametrStates.USER_SCENARIO: (build_choose_user_scenario_handler(),),
             ParametrStates.NAME: (build_name_text_handler(),),
             ParametrStates.DEFAULT_VALUE: (build_default_value_text_handler(),),
+            ParametrStates.CONTINUE: (build_continue_handler(),),
         },
         fallbacks=(cancel_handler, unexpected_err_handler),
     )
@@ -155,16 +181,17 @@ def build_parametr_conversation_handler():
 
 def build_direct_conversation_handler(
     entry_points: list[BaseHandler[Update, Any, object]],
-    map_to_parrent: dict[object, object],
+    map_to_parent: dict[object, object],
 ):
     return ConversationHandler(
         entry_points=entry_points or [],
         states={
             ParametrStates.NAME: (build_name_text_handler(),),
             ParametrStates.DEFAULT_VALUE: (build_default_value_text_handler(),),
+            ParametrStates.CONTINUE: (build_continue_handler(),),
         },
         fallbacks=(cancel_handler, unexpected_err_handler),
-        map_to_parrent=map_to_parrent or {END: END},
+        map_to_parent=map_to_parent or {END: END},
     )
 
 

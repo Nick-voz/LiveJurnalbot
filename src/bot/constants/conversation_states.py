@@ -18,6 +18,7 @@ class ParametrStates(IntEnum):
     USER_SCENARIO = auto()
     NAME = auto()
     DEFAULT_VALUE = auto()
+    CONTINUE = auto()
 
 
 class RecordStates(IntEnum):

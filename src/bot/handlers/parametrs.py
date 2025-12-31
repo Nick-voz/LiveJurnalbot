@@ -1,5 +1,8 @@
+from typing import Any
+
 from telegram import Update
 from telegram.ext import Application
+from telegram.ext import BaseHandler
 from telegram.ext import CallbackQueryHandler
 from telegram.ext import CommandHandler
 from telegram.ext import ContextTypes
@@ -45,6 +48,20 @@ async def start_create_parametr_conv(update: Update, _) -> int:
 
     await update.message.reply_text("Select scenario", reply_markup=reply_markup)
     return ParametrStates.USER_SCENARIO
+
+
+async def start_direct_parametr_conv(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> int:
+    scenario = context.user_data.get(UDK.USER_SCENARIO_ID)
+    if scenario is None:
+        await update.message.reply_text(
+            "No scenario selected. Please use /set_parametr first to select a scenario."
+        )
+        return END
+
+    await update.message.reply_text("Send name for the parameter")
+    return ParametrStates.NAME
 
 
 async def choose_user_scenario(
@@ -124,7 +141,7 @@ def build_default_value_text_handler():
     return MessageHandler(filters.TEXT, get_default_value)
 
 
-def build_conversation_handler():
+def build_parametr_conversation_handler():
     return ConversationHandler(
         entry_points=(build_start_parametr_command_handler(),),
         states={
@@ -136,5 +153,20 @@ def build_conversation_handler():
     )
 
 
+def build_direct_conversation_handler(
+    entry_points: list[BaseHandler[Update, Any, object]],
+    map_to_parrent: dict[object, object],
+):
+    return ConversationHandler(
+        entry_points=entry_points or [],
+        states={
+            ParametrStates.NAME: (build_name_text_handler(),),
+            ParametrStates.DEFAULT_VALUE: (build_default_value_text_handler(),),
+        },
+        fallbacks=(cancel_handler, unexpected_err_handler),
+        map_to_parrent=map_to_parrent or {END: END},
+    )
+
+
 def register(app: Application):
-    app.add_handler(build_conversation_handler())
+    app.add_handler(build_parametr_conversation_handler())

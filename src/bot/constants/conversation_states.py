@@ -6,6 +6,9 @@ END = -1
 
 class Scenario(IntEnum):
     NAME = auto()
+    ADD_PARAMETERS = auto()
+    PARAMETERS = auto()
+    DENY = auto()
 
 
 class ReminderStrategyStates(IntEnum):

@@ -1,5 +1,6 @@
 from typing import Any
 
+from sqlalchemy.orm import keyfunc_mapping
 from telegram import Update
 from telegram.ext import Application
 from telegram.ext import BaseHandler
@@ -15,6 +16,7 @@ from src.bot.constants.conversation_states import END
 from src.bot.constants.conversation_states import ParametrStates
 from src.bot.constants.user_data_keys import UDK
 from src.bot.handlers.base import cancel_handler
+from src.bot.handlers.base import prepare_scenarios_list
 from src.bot.handlers.base import unexpected_err_handler
 from src.bot.keyboards.parametrs import get_continue_keyboard
 from src.bot.keyboards.scenarios import get_keyboard_scenarios
@@ -136,6 +138,8 @@ async def handle_continue(update: Update, _) -> int:
         return ParametrStates.NAME
     if query.data == CMD.DENY:
         await query.edit_message_text("Parameter creation finished.")
+        message, keyboard = prepare_scenarios_list(update.effective_chat.id)
+        await update.effective_chat.send_message(message, reply_markup=keyboard)
         return END
     await query.edit_message_text("Invalid choice. Please try again.")
     return ParametrStates.CONTINUE
@@ -184,7 +188,7 @@ def build_direct_conversation_handler(
     map_to_parent: dict[object, object],
 ):
     return ConversationHandler(
-        entry_points=entry_points or [],
+        entry_points=entry_points or [build_name_text_handler()],
         states={
             ParametrStates.NAME: (build_name_text_handler(),),
             ParametrStates.DEFAULT_VALUE: (build_default_value_text_handler(),),

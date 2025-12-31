@@ -12,22 +12,16 @@ from src.bot.constants.conversation_states import Scenario
 from src.bot.constants.conversation_states import ScenariosList
 from src.bot.constants.user_data_keys import UDK
 from src.bot.handlers.base import cancel_handler
+from src.bot.handlers.base import prepare_scenarios_list
 from src.bot.handlers.base import send_menu
 from src.bot.handlers.base import unexpected_err_handler
+from src.bot.handlers.parametrs import build_direct_conversation_handler
+from src.bot.keyboards.parametrs import get_continue_keyboard
 from src.bot.keyboards.scenarios import get_keyboard_delete_confirmation
 from src.bot.keyboards.scenarios import get_keyboard_scenario_options
-from src.bot.keyboards.scenarios import get_keyboard_scenarios
 from src.db.repository import create_user_scenario
 from src.db.repository import delete_user_scenario_by_id
 from src.db.repository import get_user_scenario_by_id
-from src.db.repository import get_user_scenarios_by_chat
-
-
-def prepare_scenarios_list(chat_id):
-    scenarios = get_user_scenarios_by_chat(chat_id)
-    reply_text = "Choose scenario to interact or tap back to menu."
-    reply_markup = get_keyboard_scenarios(scenarios)
-    return reply_text, reply_markup
 
 
 async def send_scenarios_list(update: Update) -> None:
@@ -108,16 +102,35 @@ async def create_scenario(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     return Scenario.NAME
 
 
-async def get_scenario_name(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
+async def get_scenario_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     chat_id = update.effective_chat.id
     name = update.message.text
-    create_user_scenario(chat_id=chat_id, name=name)
+    user_scenario = create_user_scenario(chat_id=chat_id, name=name)
+    context.user_data[UDK.USER_SCENARIO_ID] = user_scenario
     await update.message.reply_text(
         f"scenario with name: '{name}' was added to your scenarios"
     )
-    reply_text, reply_markup = prepare_scenarios_list(chat_id)
-    await update.message.reply_text(reply_text, reply_markup=reply_markup)
-    return ScenariosList.SCENARIO
+    await update.message.reply_text(
+        "Do you want to add parameters to this scenario?",
+        reply_markup=get_continue_keyboard(),
+    )
+    return Scenario.ADD_PARAMETERS
+
+
+async def handle_add_parameters(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
+    query = update.callback_query
+    await query.answer()
+
+    if query.data == CMD.CONFIRM:
+        await query.edit_message_text("Send name for the parameter")
+        return Scenario.PARAMETERS
+    if query.data == CMD.DENY:
+        await query.edit_message_text("Scenario created. Returning to scenarios list.")
+        reply_text, reply_markup = prepare_scenarios_list(update.effective_chat.id)
+        await query.message.reply_text(reply_text, reply_markup=reply_markup)
+        return Scenario.DENY
+    await query.edit_message_text("Invalid choice. Please try again.")
+    return Scenario.ADD_PARAMETERS
 
 
 # Builders (factory-style constructors) for handlers
@@ -155,17 +168,30 @@ def build_cancel_delete_handler():
     return CallbackQueryHandler(cancel_delete, pattern=rf"^{CMD.DENY}$")
 
 
+def build_add_parameters_handler():
+    pattern = f"^({CMD.CONFIRM}|{CMD.DENY})$"
+    return CallbackQueryHandler(handle_add_parameters, pattern=pattern)
+
+
 def build_create_scenario_handler():
     # Entry point and nested state machine for creating a scenario
+    param_handler = build_direct_conversation_handler(
+        entry_points=[], map_to_parent={END: END}
+    )
     return ConversationHandler(
         entry_points=[
             CallbackQueryHandler(create_scenario, pattern=CMD.CREATE_SCENARIO)
         ],
         states={
             Scenario.NAME: [MessageHandler(filters.TEXT, get_scenario_name)],
+            Scenario.ADD_PARAMETERS: [build_add_parameters_handler()],
+            Scenario.PARAMETERS: [param_handler],
         },
         fallbacks=[cancel_handler, unexpected_err_handler],
-        map_to_parent={END: ScenariosList.SCENARIO},
+        map_to_parent={
+            END: ScenariosList.SCENARIO,
+            Scenario.DENY: ScenariosList.SCENARIO,
+        },
     )
 
 

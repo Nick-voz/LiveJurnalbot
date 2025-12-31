@@ -7,6 +7,8 @@ from telegram.ext import filters
 
 from src.bot.constants.commands_text import CMD
 from src.bot.constants.conversation_states import END
+from src.bot.keyboards.scenarios import get_keyboard_scenarios
+from src.db.repository import get_user_scenarios_by_chat
 
 
 async def unexpected_err(update: Update, _) -> None:
@@ -31,6 +33,13 @@ async def send_menu(update: Update, _) -> None:
         await update.message.reply_text(reply_text, reply_markup=keyboard)
     else:
         await update.callback_query.edit_message_text(reply_text, reply_markup=keyboard)
+
+
+def prepare_scenarios_list(chat_id):
+    scenarios = get_user_scenarios_by_chat(chat_id)
+    reply_text = "Choose scenario to interact or tap back to menu."
+    reply_markup = get_keyboard_scenarios(scenarios)
+    return reply_text, reply_markup
 
 
 # Builders for handlers (optional, keeps pattern consistent with other modules)

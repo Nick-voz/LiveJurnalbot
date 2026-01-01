@@ -8,6 +8,7 @@ from telegram.ext import filters
 from src.bot.constants.commands_text import CMD
 from src.bot.constants.conversation_states import END
 from src.bot.constants.conversation_states import Menu
+from src.bot.constants.conversation_states import RecordStates
 from src.bot.constants.conversation_states import Scenario
 from src.bot.constants.conversation_states import ScenariosList
 from src.bot.constants.user_data_keys import UDK
@@ -16,6 +17,7 @@ from src.bot.handlers.base import build_unexpected_err_handler
 from src.bot.handlers.base import prepare_scenarios_list
 from src.bot.handlers.base import send_menu
 from src.bot.handlers.parametrs import build_direct_conversation_handler
+from src.bot.handlers.records import build_get_value_handler
 from src.bot.keyboards.parametrs import get_continue_keyboard
 from src.bot.keyboards.scenarios import get_keyboard_delete_confirmation
 from src.bot.keyboards.scenarios import get_keyboard_scenario_options
@@ -109,10 +111,22 @@ async def delete_scenario(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     return ScenariosList.DELETE_CONFIRM
 
 
-async def fill_scenario(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
+async def fill_scenario(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.callback_query.answer()
-    await update.callback_query.edit_message_text("Fill (Add Record) selected")
-    return END
+    scenario_id = context.user_data[UDK.USER_SCENARIO_ID]
+    user_scenario = get_user_scenario_by_id(scenario_id)
+    parametrs = get_user_scenario_parametrs(user_scenario)
+    if not parametrs:
+        await update.callback_query.edit_message_text("No parameters in this scenario.")
+        return END
+    context.user_data[UDK.PARAMETERS] = parametrs
+    context.user_data[UDK.CURRENT_PARAM_INDEX] = 0
+    parametr = parametrs[0]
+    await update.callback_query.edit_message_text(
+        f"Send value for parameter: {parametr.name}"
+    )
+    context.user_data[UDK.PARAMETR] = parametr
+    return RecordStates.VALUE
 
 
 async def rename_scenario(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
@@ -278,6 +292,17 @@ def build_create_scenario_handler():
 def build_scenarios_handler():
     create_scenario_conv_handler = build_create_scenario_handler()
 
+    fill_records_conv = ConversationHandler(
+        entry_points=[
+            CallbackQueryHandler(fill_scenario, pattern=rf"^{CMD.FILL_SCENARIO}$")
+        ],
+        states={
+            RecordStates.VALUE: [build_get_value_handler()],
+        },
+        fallbacks=[build_cancel_handler(), build_unexpected_err_handler()],
+        map_to_parent={END: ScenariosList.OPTION},
+    )
+
     return ConversationHandler(
         entry_points=[build_get_my_scenarios_handler()],
         states={
@@ -288,7 +313,7 @@ def build_scenarios_handler():
             ],
             ScenariosList.OPTION: [
                 build_delete_scenario_handler(),
-                build_fill_scenario_handler(),
+                fill_records_conv,
                 build_show_parameters_handler(),
                 build_rename_scenario_handler(),
                 build_back_to_scenarios_handler(),

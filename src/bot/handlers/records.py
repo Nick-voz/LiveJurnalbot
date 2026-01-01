@@ -2,7 +2,6 @@ from zoneinfo import ZoneInfo
 
 from datetime import datetime
 from telegram import Update
-from telegram.ext import Application
 from telegram.ext import CallbackQueryHandler
 from telegram.ext import CommandHandler
 from telegram.ext import ContextTypes
@@ -16,6 +15,7 @@ from src.bot.constants.conversation_states import RecordStates
 from src.bot.constants.user_data_keys import UDK
 from src.bot.handlers.base import build_cancel_handler
 from src.bot.handlers.base import build_unexpected_err_handler
+from src.bot.keyboards.scenarios import get_keyboard_scenario_options
 from src.bot.keyboards.scenarios import get_keyboard_scenarios
 from src.db.models import Parametr
 from src.db.models import Record
@@ -85,6 +85,12 @@ async def get_value(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         return RecordStates.VALUE
 
     await update.message.reply_text("All values recorded successfully.")
+    if UDK.USER_SCENARIO_ID in context.user_data:
+        scenario_id = context.user_data[UDK.USER_SCENARIO_ID]
+        scenario = get_user_scenario_by_id(scenario_id)
+        reply_text = f"Chose option for scenario: {scenario.scenario.name}"
+        reply_markup = get_keyboard_scenario_options()
+        await update.message.reply_text(reply_text, reply_markup=reply_markup)
     return END
 
 
@@ -112,10 +118,3 @@ def build_conversation_handler():
         },
         fallbacks=(build_cancel_handler(), build_unexpected_err_handler()),
     )
-
-
-# Public registrar
-
-
-def register(app: Application):
-    app.add_handler(build_conversation_handler())

@@ -40,7 +40,7 @@ def get_keyboard_scenario_options() -> InlineKeyboardMarkup:
             InlineKeyboardButton("Fill (Add Record)", callback_data=CMD.FILL_SCENARIO),
         ],
         [
-            InlineKeyboardButton("Edit", callback_data=CMD.EDIT_SCENARIO),
+            InlineKeyboardButton("Rename", callback_data=CMD.RENAME_SCENARIO),
             InlineKeyboardButton("Back", callback_data=CMD.MENU),
         ],
     ]

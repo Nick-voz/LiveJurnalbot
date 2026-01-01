@@ -8,6 +8,6 @@ class CMD:
     SCENARIOS_LIST = "get_my_scenarios"
     DELETE_SCENARIO = "delete_scenario"
     FILL_SCENARIO = "fill_scenario"
-    EDIT_SCENARIO = "edit_scenario"
+    RENAME_SCENARIO = "rename_scenario"
     CONFIRM = "confirm"
     DENY = "deny"

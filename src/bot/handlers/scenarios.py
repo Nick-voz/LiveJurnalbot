@@ -71,9 +71,9 @@ async def fill_scenario(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     return END
 
 
-async def edit_scenario(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
+async def rename_scenario(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     await update.callback_query.answer()
-    await update.callback_query.edit_message_text("Edit selected")
+    await update.callback_query.edit_message_text("rename scenario selected")
     return END
 
 
@@ -156,8 +156,8 @@ def build_fill_scenario_handler():
     return CallbackQueryHandler(fill_scenario, pattern=rf"^{CMD.FILL_SCENARIO}$")
 
 
-def build_edit_scenario_handler():
-    return CallbackQueryHandler(edit_scenario, pattern=rf"^{CMD.EDIT_SCENARIO}$")
+def build_rename_scenario_handler():
+    return CallbackQueryHandler(rename_scenario, pattern=rf"^{CMD.RENAME_SCENARIO}$")
 
 
 def build_confirm_delete_handler():
@@ -212,7 +212,7 @@ def build_scenarios_handler():
             ScenariosList.OPTION: [
                 build_delete_scenario_handler(),
                 build_fill_scenario_handler(),
-                build_edit_scenario_handler(),
+                build_rename_scenario_handler(),
                 build_back_handler(),
             ],
             ScenariosList.DELETE_CONFIRM: [

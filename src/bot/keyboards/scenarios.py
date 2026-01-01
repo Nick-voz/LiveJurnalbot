@@ -5,6 +5,7 @@ from telegram import InlineKeyboardButton
 from telegram import InlineKeyboardMarkup
 
 from src.bot.constants.commands_text import CMD
+from src.db.models import Parametr
 from src.db.models import UserScenario
 
 
@@ -40,6 +41,9 @@ def get_keyboard_scenario_options() -> InlineKeyboardMarkup:
             InlineKeyboardButton("Fill (Add Record)", callback_data=CMD.FILL_SCENARIO),
         ],
         [
+            InlineKeyboardButton("Parameters", callback_data=CMD.SHOW_PARAMETERS),
+        ],
+        [
             InlineKeyboardButton("Rename", callback_data=CMD.RENAME_SCENARIO),
             InlineKeyboardButton("Back", callback_data=CMD.BACK_TO_SCENARIOS),
         ],
@@ -55,5 +59,23 @@ def get_keyboard_delete_confirmation() -> InlineKeyboardMarkup:
             InlineKeyboardButton("No", callback_data=CMD.DENY),
         ],
     ]
+
+    return InlineKeyboardMarkup(keyboard)
+
+
+def get_keyboard_scenario_parameters(
+    parameters: Iterable[Parametr],
+) -> InlineKeyboardMarkup:
+    keyboard = []
+    for batch in batched(parameters, 3):
+        buttons_batch = []
+        for param in batch:
+            name = param.name
+            buttons_batch.append(
+                InlineKeyboardButton(name, callback_data=f"param_{param.id}")
+            )
+        keyboard.append(buttons_batch)
+
+    keyboard.append([InlineKeyboardButton("Back", callback_data=CMD.BACK_TO_OPTIONS)])
 
     return InlineKeyboardMarkup(keyboard)

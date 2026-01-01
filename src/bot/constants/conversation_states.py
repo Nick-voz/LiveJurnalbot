@@ -40,3 +40,4 @@ class ScenariosList(IntEnum):
     OPTION = auto()
     DELETE_CONFIRM = auto()
     RENAME = auto()
+    PARAMETERS = auto()

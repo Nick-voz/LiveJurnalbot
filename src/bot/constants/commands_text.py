@@ -12,3 +12,5 @@ class CMD:
     CONFIRM = "confirm"
     DENY = "deny"
     BACK_TO_SCENARIOS = "back_to_scenarios"
+    SHOW_PARAMETERS = "show_parameters"
+    BACK_TO_OPTIONS = "back_to_options"

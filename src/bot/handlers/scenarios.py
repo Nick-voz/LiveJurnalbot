@@ -19,9 +19,11 @@ from src.bot.handlers.parametrs import build_direct_conversation_handler
 from src.bot.keyboards.parametrs import get_continue_keyboard
 from src.bot.keyboards.scenarios import get_keyboard_delete_confirmation
 from src.bot.keyboards.scenarios import get_keyboard_scenario_options
+from src.bot.keyboards.scenarios import get_keyboard_scenario_parameters
 from src.db.repository import create_user_scenario
 from src.db.repository import delete_user_scenario_by_id
 from src.db.repository import get_user_scenario_by_id
+from src.db.repository import get_user_scenario_parametrs
 from src.db.repository import update_user_scenario_name
 
 
@@ -54,6 +56,34 @@ async def back_to_scenarios(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int
     await update.callback_query.answer()
     await send_scenarios_list(update)
     return ScenariosList.SCENARIO
+
+
+async def show_parameters(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    await update.callback_query.answer()
+    scenario_id = context.user_data[UDK.USER_SCENARIO_ID]
+    user_scenario = get_user_scenario_by_id(scenario_id)
+    parameters = get_user_scenario_parametrs(user_scenario)
+    reply_text = f"Parameters for scenario '{user_scenario.scenario.name}':"
+    reply_markup = get_keyboard_scenario_parameters(parameters)
+    await update.callback_query.edit_message_text(reply_text, reply_markup=reply_markup)
+    return ScenariosList.PARAMETERS
+
+
+async def back_to_options(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    await update.callback_query.answer()
+    scenario_id = context.user_data[UDK.USER_SCENARIO_ID]
+    scenario = get_user_scenario_by_id(scenario_id)
+    reply_text = f"Chose option for scenario: {scenario.scenario.name}"
+    reply_markup = get_keyboard_scenario_options()
+    await update.callback_query.edit_message_text(reply_text, reply_markup=reply_markup)
+    return ScenariosList.OPTION
+
+
+async def choose_parameter(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
+    await update.callback_query.answer()
+    # For now, just do nothing, or perhaps show parameter details
+    await update.callback_query.edit_message_text("Parameter selected (no action yet)")
+    return END
 
 
 async def choose_scenario(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -166,7 +196,21 @@ def build_get_my_scenarios_handler():
 
 
 def build_back_to_scenarios_handler():
-    return CallbackQueryHandler(back_to_scenarios, pattern=rf"^{CMD.BACK_TO_SCENARIOS}$")
+    return CallbackQueryHandler(
+        back_to_scenarios, pattern=rf"^{CMD.BACK_TO_SCENARIOS}$"
+    )
+
+
+def build_show_parameters_handler():
+    return CallbackQueryHandler(show_parameters, pattern=rf"^{CMD.SHOW_PARAMETERS}$")
+
+
+def build_back_to_options_handler():
+    return CallbackQueryHandler(back_to_options, pattern=rf"^{CMD.BACK_TO_OPTIONS}$")
+
+
+def build_choose_parameter_handler():
+    return CallbackQueryHandler(choose_parameter, pattern=r"^param_\d+$")
 
 
 def build_back_handler():
@@ -245,6 +289,7 @@ def build_scenarios_handler():
             ScenariosList.OPTION: [
                 build_delete_scenario_handler(),
                 build_fill_scenario_handler(),
+                build_show_parameters_handler(),
                 build_rename_scenario_handler(),
                 build_back_to_scenarios_handler(),
             ],
@@ -255,6 +300,10 @@ def build_scenarios_handler():
             ],
             ScenariosList.RENAME: [
                 build_get_new_scenario_name_handler(),
+            ],
+            ScenariosList.PARAMETERS: [
+                build_choose_parameter_handler(),
+                build_back_to_options_handler(),
             ],
         },
         fallbacks=[build_cancel_handler(), build_unexpected_err_handler()],

@@ -16,7 +16,6 @@ from src.bot.constants.conversation_states import RecordStates
 from src.bot.constants.user_data_keys import UDK
 from src.bot.handlers.base import build_cancel_handler
 from src.bot.handlers.base import build_unexpected_err_handler
-from src.bot.keyboards.parametrs import get_keyboard_parametrs
 from src.bot.keyboards.scenarios import get_keyboard_scenarios
 from src.db.models import Parametr
 from src.db.models import Record
@@ -42,38 +41,21 @@ async def choose_user_scenario(
     query = update.callback_query
     await query.answer()
     scenario_id = query.data
-    user_scenio = get_user_scenario_by_id(scenario_id)
-    if user_scenio is None:
+    user_scenario = get_user_scenario_by_id(scenario_id)
+    if user_scenario is None:
         return RecordStates.USER_SCENARIO
 
-    parametrs = get_user_scenario_parametrs(user_scenio)
-    reply_markup = get_keyboard_parametrs(parametrs)
-    await query.edit_message_text("choose parametr", reply_markup=reply_markup)
-    context.user_data[UDK.USER_SCENARIO_ID] = user_scenio
-    return RecordStates.PARAMETR
+    parametrs = get_user_scenario_parametrs(user_scenario)
+    if not parametrs:
+        await query.edit_message_text("No parameters in this scenario.")
+        return END
 
-
-async def choose_parametr(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query
-    await query.answer()
-    user_scenio = context.user_data.get(UDK.USER_SCENARIO_ID)
-    parametr_name = query.data
-
-    if user_scenio is None:
-        await query.message.reply_text("try again")
-        return RecordStates.USER_SCENARIO
-
-    parametrs = get_user_scenario_parametrs(user_scenio)
-    try:
-        parametr = next(
-            (p for p in parametrs if p.name.lower() == parametr_name.lower())
-        )
-    except StopIteration:
-        await query.message.reply_text("can not find parametr with this name")
-
-    await query.edit_message_text("send value for parametr")
+    context.user_data[UDK.USER_SCENARIO_ID] = user_scenario
+    context.user_data[UDK.PARAMETERS] = parametrs
+    context.user_data[UDK.CURRENT_PARAM_INDEX] = 0
+    parametr = parametrs[0]
+    await query.edit_message_text(f"Send value for parameter: {parametr.name}")
     context.user_data[UDK.PARAMETR] = parametr
-
     return RecordStates.VALUE
 
 
@@ -92,6 +74,17 @@ async def get_value(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     record.save()
     await update.message.reply_text("success")
 
+    index = context.user_data.get(UDK.CURRENT_PARAM_INDEX, 0)
+    parameters = context.user_data.get(UDK.PARAMETERS, [])
+    index += 1
+    if index < len(parameters):
+        context.user_data[UDK.CURRENT_PARAM_INDEX] = index
+        parametr = parameters[index]
+        context.user_data[UDK.PARAMETR] = parametr
+        await update.message.reply_text(f"Send value for parameter: {parametr.name}")
+        return RecordStates.VALUE
+
+    await update.message.reply_text("All values recorded successfully.")
     return END
 
 
@@ -106,10 +99,6 @@ def build_choose_user_scenario_handler():
     return CallbackQueryHandler(choose_user_scenario)
 
 
-def build_choose_parametr_handler():
-    return CallbackQueryHandler(choose_parametr)
-
-
 def build_get_value_handler():
     return MessageHandler(filters.TEXT, get_value)
 
@@ -119,7 +108,6 @@ def build_conversation_handler():
         entry_points=(build_start_add_record_command_handler(),),
         states={
             RecordStates.USER_SCENARIO: (build_choose_user_scenario_handler(),),
-            RecordStates.PARAMETR: (build_choose_parametr_handler(),),
             RecordStates.VALUE: (build_get_value_handler(),),
         },
         fallbacks=(build_cancel_handler(), build_unexpected_err_handler()),

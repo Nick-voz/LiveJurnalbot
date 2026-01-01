@@ -15,9 +15,9 @@ from src.bot.constants.commands_text import CMD
 from src.bot.constants.conversation_states import END
 from src.bot.constants.conversation_states import ParametrStates
 from src.bot.constants.user_data_keys import UDK
-from src.bot.handlers.base import cancel_handler
+from src.bot.handlers.base import build_cancel_handler
+from src.bot.handlers.base import build_unexpected_err_handler
 from src.bot.handlers.base import prepare_scenarios_list
-from src.bot.handlers.base import unexpected_err_handler
 from src.bot.keyboards.parametrs import get_continue_keyboard
 from src.bot.keyboards.scenarios import get_keyboard_scenarios
 from src.db.models import Parametr
@@ -179,7 +179,7 @@ def build_parametr_conversation_handler():
             ParametrStates.DEFAULT_VALUE: (build_default_value_text_handler(),),
             ParametrStates.CONTINUE: (build_continue_handler(),),
         },
-        fallbacks=(cancel_handler, unexpected_err_handler),
+        fallbacks=(build_cancel_handler(), build_unexpected_err_handler()),
     )
 
 
@@ -194,7 +194,7 @@ def build_direct_conversation_handler(
             ParametrStates.DEFAULT_VALUE: (build_default_value_text_handler(),),
             ParametrStates.CONTINUE: (build_continue_handler(),),
         },
-        fallbacks=(cancel_handler, unexpected_err_handler),
+        fallbacks=(build_cancel_handler(), build_unexpected_err_handler()),
         map_to_parent=map_to_parent or {END: END},
     )
 

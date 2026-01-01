@@ -11,10 +11,10 @@ from src.bot.constants.conversation_states import Menu
 from src.bot.constants.conversation_states import Scenario
 from src.bot.constants.conversation_states import ScenariosList
 from src.bot.constants.user_data_keys import UDK
-from src.bot.handlers.base import cancel_handler
+from src.bot.handlers.base import build_cancel_handler
+from src.bot.handlers.base import build_unexpected_err_handler
 from src.bot.handlers.base import prepare_scenarios_list
 from src.bot.handlers.base import send_menu
-from src.bot.handlers.base import unexpected_err_handler
 from src.bot.handlers.parametrs import build_direct_conversation_handler
 from src.bot.keyboards.parametrs import get_continue_keyboard
 from src.bot.keyboards.scenarios import get_keyboard_delete_confirmation
@@ -187,7 +187,7 @@ def build_create_scenario_handler():
             Scenario.ADD_PARAMETERS: [build_add_parameters_handler()],
             Scenario.PARAMETERS: [param_handler],
         },
-        fallbacks=[cancel_handler, unexpected_err_handler],
+        fallbacks=[build_cancel_handler(), build_unexpected_err_handler()],
         map_to_parent={
             END: ScenariosList.SCENARIO,
             Scenario.DENY: ScenariosList.SCENARIO,
@@ -221,7 +221,7 @@ def build_scenarios_handler():
                 build_back_handler(),
             ],
         },
-        fallbacks=[cancel_handler, unexpected_err_handler],
+        fallbacks=[build_cancel_handler(), build_unexpected_err_handler()],
         map_to_parent={END: Menu.CHOOSING_OPTION},
     )
 

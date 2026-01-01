@@ -42,18 +42,9 @@ def prepare_scenarios_list(chat_id):
     return reply_text, reply_markup
 
 
-# Builders for handlers (optional, keeps pattern consistent with other modules)
-
-
 def build_unexpected_err_handler() -> MessageHandler:
     return MessageHandler(filters.ALL, unexpected_err)
 
 
 def build_cancel_handler() -> CommandHandler:
     return CommandHandler(CMD.CANCEL, cancel)
-
-
-# Public exports / registration
-
-unexpected_err_handler = build_unexpected_err_handler()
-cancel_handler = build_cancel_handler()

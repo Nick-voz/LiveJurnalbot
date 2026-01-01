@@ -5,10 +5,10 @@ from telegram.ext import ConversationHandler
 
 from src.bot.constants.commands_text import CMD
 from src.bot.constants.conversation_states import Menu
-from src.bot.handlers.base import cancel_handler
+from src.bot.handlers.base import build_cancel_handler
+from src.bot.handlers.base import build_unexpected_err_handler
 from src.bot.handlers.base import send_menu
-from src.bot.handlers.base import unexpected_err_handler
-from src.bot.handlers.scenarios import scenarios_handler
+from src.bot.handlers.scenarios import build_scenarios_handler
 from src.db.repository import create_user
 from src.db.repository import get_user_by_chat
 
@@ -44,9 +44,9 @@ def build_menu_conversation_handler() -> ConversationHandler:
     return ConversationHandler(
         entry_points=[menu_handler],
         states={
-            Menu.CHOOSING_OPTION: [scenarios_handler],
+            Menu.CHOOSING_OPTION: [build_scenarios_handler()],
         },
-        fallbacks=[cancel_handler, unexpected_err_handler],
+        fallbacks=[build_cancel_handler(), build_unexpected_err_handler()],
     )
 
 

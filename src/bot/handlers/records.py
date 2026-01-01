@@ -15,8 +15,8 @@ from src.bot.constants.conversation_states import END
 from src.bot.constants.conversation_states import ParametrStates
 from src.bot.constants.conversation_states import RecordStates
 from src.bot.constants.user_data_keys import UDK
-from src.bot.handlers.base import cancel_handler
-from src.bot.handlers.base import unexpected_err_handler
+from src.bot.handlers.base import build_cancel_handler
+from src.bot.handlers.base import build_unexpected_err_handler
 from src.bot.keyboards.parametrs import get_keyboard_parametrs
 from src.bot.keyboards.scenarios import get_keyboard_scenarios
 from src.db.models import Parametr
@@ -129,7 +129,7 @@ def build_conversation_handler():
             RecordStates.PARAMETR: (build_choose_parametr_handler(),),
             RecordStates.VALUE: (build_get_value_handler(),),
         },
-        fallbacks=(cancel_handler, unexpected_err_handler),
+        fallbacks=(build_cancel_handler(), build_unexpected_err_handler()),
     )
 
 

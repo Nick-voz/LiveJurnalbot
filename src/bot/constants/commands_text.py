@@ -11,3 +11,4 @@ class CMD:
     RENAME_SCENARIO = "rename_scenario"
     CONFIRM = "confirm"
     DENY = "deny"
+    BACK_TO_SCENARIOS = "back_to_scenarios"

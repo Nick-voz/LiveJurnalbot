@@ -50,6 +50,12 @@ async def back(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return END
 
 
+async def back_to_scenarios(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
+    await update.callback_query.answer()
+    await send_scenarios_list(update)
+    return ScenariosList.SCENARIO
+
+
 async def choose_scenario(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     scenario_id = int(update.callback_query.data)
     context.user_data[UDK.USER_SCENARIO_ID] = scenario_id
@@ -159,6 +165,10 @@ def build_get_my_scenarios_handler():
     return CallbackQueryHandler(get_my_scenarios, pattern=rf"^{CMD.SCENARIOS_LIST}$")
 
 
+def build_back_to_scenarios_handler():
+    return CallbackQueryHandler(back_to_scenarios, pattern=rf"^{CMD.BACK_TO_SCENARIOS}$")
+
+
 def build_back_handler():
     return CallbackQueryHandler(back, pattern=rf"^{CMD.MENU}$")
 
@@ -236,7 +246,7 @@ def build_scenarios_handler():
                 build_delete_scenario_handler(),
                 build_fill_scenario_handler(),
                 build_rename_scenario_handler(),
-                build_back_handler(),
+                build_back_to_scenarios_handler(),
             ],
             ScenariosList.DELETE_CONFIRM: [
                 build_confirm_delete_handler(),

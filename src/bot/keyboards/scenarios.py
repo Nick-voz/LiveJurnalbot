@@ -41,7 +41,7 @@ def get_keyboard_scenario_options() -> InlineKeyboardMarkup:
         ],
         [
             InlineKeyboardButton("Rename", callback_data=CMD.RENAME_SCENARIO),
-            InlineKeyboardButton("Back", callback_data=CMD.MENU),
+            InlineKeyboardButton("Back", callback_data=CMD.BACK_TO_SCENARIOS),
         ],
     ]
 

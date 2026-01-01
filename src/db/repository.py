@@ -166,6 +166,14 @@ def get_user_scenario_parametrs(user_scenario: UserScenario) -> Iterable[Paramet
     return parametrs
 
 
+def update_user_scenario_name(user_scenario_id: int, new_name: str) -> None:
+    user_scenario = get_user_scenario_by_id(user_scenario_id)
+    with Session(engine) as s:
+        s.add(user_scenario)
+        user_scenario.scenario.name = new_name
+        s.commit()
+
+
 def delete_user_scenario_by_id(scenario_id):
     selector = Select(UserScenario).where(UserScenario.id == scenario_id)
     with Session(engine) as s:

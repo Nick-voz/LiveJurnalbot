@@ -22,12 +22,20 @@ from src.bot.keyboards.scenarios import get_keyboard_scenario_options
 from src.db.repository import create_user_scenario
 from src.db.repository import delete_user_scenario_by_id
 from src.db.repository import get_user_scenario_by_id
+from src.db.repository import update_user_scenario_name
 
 
 async def send_scenarios_list(update: Update) -> None:
-    chat_id = update.callback_query.message.chat.id
+    chat_id = update.effective_chat.id
     reply_text, reply_markup = prepare_scenarios_list(chat_id)
-    await update.callback_query.edit_message_text(reply_text, reply_markup=reply_markup)
+    if update.callback_query:
+        await update.callback_query.edit_message_text(
+            reply_text, reply_markup=reply_markup
+        )
+    elif update.message:
+        await update.message.reply_text(reply_text, reply_markup=reply_markup)
+    else:
+        raise ValueError("Update must have either callback_query or message")
 
 
 async def get_my_scenarios(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
@@ -73,8 +81,8 @@ async def fill_scenario(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def rename_scenario(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
     await update.callback_query.answer()
-    await update.callback_query.edit_message_text("rename scenario selected")
-    return END
+    await update.callback_query.edit_message_text("Send the new name for the scenario.")
+    return ScenariosList.RENAME
 
 
 async def confirm_delete(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -115,6 +123,17 @@ async def get_scenario_name(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         reply_markup=get_continue_keyboard(),
     )
     return Scenario.ADD_PARAMETERS
+
+
+async def get_new_scenario_name(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> int:
+    new_name = update.message.text
+    user_scenario_id = context.user_data[UDK.USER_SCENARIO_ID]
+    update_user_scenario_name(user_scenario_id, new_name)
+    await update.message.reply_text(f"Scenario renamed to '{new_name}'.")
+    await send_scenarios_list(update)
+    return ScenariosList.SCENARIO
 
 
 async def handle_add_parameters(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
@@ -158,6 +177,10 @@ def build_fill_scenario_handler():
 
 def build_rename_scenario_handler():
     return CallbackQueryHandler(rename_scenario, pattern=rf"^{CMD.RENAME_SCENARIO}$")
+
+
+def build_get_new_scenario_name_handler():
+    return MessageHandler(filters.TEXT, get_new_scenario_name)
 
 
 def build_confirm_delete_handler():
@@ -219,6 +242,9 @@ def build_scenarios_handler():
                 build_confirm_delete_handler(),
                 build_cancel_delete_handler(),
                 build_back_handler(),
+            ],
+            ScenariosList.RENAME: [
+                build_get_new_scenario_name_handler(),
             ],
         },
         fallbacks=[build_cancel_handler(), build_unexpected_err_handler()],

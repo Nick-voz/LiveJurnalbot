@@ -12,7 +12,6 @@ from telegram.ext import filters
 
 from src.bot.constants.commands_text import CMD
 from src.bot.constants.conversation_states import END
-from src.bot.constants.conversation_states import ParametrStates
 from src.bot.constants.conversation_states import RecordStates
 from src.bot.constants.user_data_keys import UDK
 from src.bot.handlers.base import build_cancel_handler
@@ -21,7 +20,7 @@ from src.bot.keyboards.parametrs import get_keyboard_parametrs
 from src.bot.keyboards.scenarios import get_keyboard_scenarios
 from src.db.models import Parametr
 from src.db.models import Record
-from src.db.repository import find_user_scenario_by_name
+from src.db.repository import get_user_scenario_by_id
 from src.db.repository import get_user_scenario_parametrs
 from src.db.repository import get_user_scenarios_by_chat
 
@@ -42,22 +41,16 @@ async def choose_user_scenario(
 ) -> int:
     query = update.callback_query
     await query.answer()
-    name = query.data
-    chat_id = update.effective_chat.id
-    user_scenio = find_user_scenario_by_name(name, chat_id)
-
+    scenario_id = query.data
+    user_scenio = get_user_scenario_by_id(scenario_id)
     if user_scenio is None:
         return RecordStates.USER_SCENARIO
 
     parametrs = get_user_scenario_parametrs(user_scenio)
-
     reply_markup = get_keyboard_parametrs(parametrs)
-
     await query.edit_message_text("choose parametr", reply_markup=reply_markup)
-
     context.user_data[UDK.USER_SCENARIO_ID] = user_scenio
-
-    return ParametrStates.NAME
+    return RecordStates.PARAMETR
 
 
 async def choose_parametr(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:

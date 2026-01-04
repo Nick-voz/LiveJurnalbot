@@ -7,7 +7,8 @@ A Telegram bot for personal journaling and tracking metrics. Users can create cu
 - **Scenarios**: Create custom scenarios (e.g., "Health", "Work Productivity", "Mood Tracking") to organize your metrics.
 - **Parameters**: Add parameters to each scenario (e.g., "Weight", "Hours Slept", "Mood Score") with optional default values.
 - **Records**: Easily record values for parameters with timestamps in Moscow timezone.
-- **Reminders**: Set up reminder strategies to prompt you to log data regularly.
+- **Data Export**: Ability to get data in .csv, .excel, .pdf formats. (Not yet implemented)
+- **Reminders**: Set up reminder strategies to prompt you to log data regularly. (Not yet implemented)
 - **User-Friendly Interface**: Interactive menus and conversation flows via Telegram buttons and messages.
 
 ## Technology Stack

@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    restart: unless-stopped
+    env_file: ".env"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "10011:5432"
+    volumes:
+      - data:/var/lib/postgresql/data
+    networks:
+      - network
+
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    ports:
+      - "8090:80"
+    networks:
+      - network
+
+volumes:
+  data:
+
+networks:
+  network:
+    driver: bridge

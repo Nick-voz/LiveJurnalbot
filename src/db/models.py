@@ -67,11 +67,8 @@ class Record(BaseModel):
     __tablename__ = "records"
     id: Mapped[int] = mapped_column(primary_key=True)
     parameter_id: Mapped[int] = mapped_column(ForeignKey("parametrs.id"))
-    value: Mapped[float]
+    value: Mapped[str] = mapped_column(String(150))
     datetime: Mapped[DateTime] = mapped_column(DateTime(timezone=True))
 
 
 # pylint: enable={E1136}
-
-# BaseModel.metadata.drop_all(engine)
-BaseModel.metadata.create_all(engine)

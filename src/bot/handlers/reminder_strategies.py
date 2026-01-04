@@ -14,7 +14,10 @@ from src.bot.constants.user_data_keys import UDK
 from src.bot.handlers.base import build_cancel_handler
 from src.bot.handlers.base import build_unexpected_err_handler
 from src.bot.keyboards.scenarios import get_keyboard_scenarios
+from sqlalchemy.orm import Session
+
 from src.db.models import ReminderStrategy
+from src.db.models import engine
 from src.db.repository import find_or_create_reminder_strategy
 from src.db.repository import find_user_scenario_by_name
 from src.db.repository import get_user_scenarios_by_chat
@@ -76,7 +79,9 @@ async def get_shift(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     except ValueError:
         return ReminderStrategyStates.SHIFT
 
-    strategy.save()
+    with Session(engine) as s:
+        s.add(strategy)
+        s.commit()
     await update.message.reply_text("success")
 
     return END

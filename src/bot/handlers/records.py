@@ -17,8 +17,11 @@ from src.bot.handlers.base import build_cancel_handler
 from src.bot.handlers.base import build_unexpected_err_handler
 from src.bot.keyboards.scenarios import get_keyboard_scenario_options
 from src.bot.keyboards.scenarios import get_keyboard_scenarios
+from sqlalchemy.orm import Session
+
 from src.db.models import Parameter
 from src.db.models import Record
+from src.db.models import engine
 from src.db.repository import get_user_scenario_by_id
 from src.db.repository import get_user_scenario_parameters
 from src.db.repository import get_user_scenarios_by_chat
@@ -71,7 +74,9 @@ async def get_value(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text("can not recognize value, try again")
         return RecordStates.VALUE
 
-    record.save()
+    with Session(engine) as s:
+        s.add(record)
+        s.commit()
     await update.message.reply_text("success")
 
     index = context.user_data.get(UDK.CURRENT_PARAM_INDEX, 0)

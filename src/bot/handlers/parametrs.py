@@ -20,8 +20,11 @@ from src.bot.handlers.base import build_unexpected_err_handler
 from src.bot.handlers.base import prepare_scenarios_list
 from src.bot.keyboards.parametrs import get_continue_keyboard
 from src.bot.keyboards.scenarios import get_keyboard_scenarios
+from sqlalchemy.orm import Session
+
 from src.db.models import Parameter
 from src.db.models import UserScenario
+from src.db.models import engine
 from src.db.repository import find_or_create_parameter
 from src.db.repository import get_user_scenario_by_id
 from src.db.repository import get_user_scenarios_by_chat
@@ -120,7 +123,9 @@ async def get_default_value(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         )
         return ParameterStates.DEFAULT_VALUE
 
-    parameter.save()
+    with Session(engine) as s:
+        s.add(parameter)
+        s.commit()
     await update.message.reply_text(
         "Parameter created successfully. Do you want to add another parameter?",
         reply_markup=get_continue_keyboard(),

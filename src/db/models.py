@@ -9,7 +9,6 @@ from sqlalchemy import UniqueConstraint
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import Session
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 
@@ -18,10 +17,7 @@ engine = create_engine(DB_URL)
 
 
 class BaseModel(DeclarativeBase):
-    def save(self) -> None:
-        with Session(engine) as s:
-            s.add(self)
-            s.commit()
+    pass
 
 
 class User(BaseModel):

@@ -2,13 +2,20 @@ import pytest
 from sqlalchemy import create_engine
 
 from src.db.models import User, Scenario, UserScenario
-from src.db.repository import create_user, get_user_by_chat, create_or_get_scenario, create_user_scenario, get_user_scenarios_by_chat
+from src.db.repository import (
+    create_user,
+    get_user_by_chat,
+    create_or_get_scenario,
+    create_user_scenario,
+    get_user_scenarios_by_chat,
+)
 
 
 @pytest.fixture
 def test_engine():
     engine = create_engine("sqlite:///:memory:")
     from src.db.models import BaseModel
+
     BaseModel.metadata.create_all(engine)
     yield engine
     BaseModel.metadata.drop_all(engine)
@@ -16,8 +23,8 @@ def test_engine():
 
 @pytest.fixture(autouse=True)
 def override_engine(test_engine, monkeypatch):
-    monkeypatch.setattr('src.db.repository.engine', test_engine)
-    monkeypatch.setattr('src.db.models.engine', test_engine)
+    monkeypatch.setattr("src.db.repository.engine", test_engine)
+    monkeypatch.setattr("src.db.models.engine", test_engine)
 
 
 def test_create_user():

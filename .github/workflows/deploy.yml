@@ -9,6 +9,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: deploy
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -18,10 +19,12 @@ jobs:
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            cd ./LiveJurnalbot
-            git clone https://github.com/Nick-voz/LiveJurnalbot.git
-            cd /LiveJurnalbot
-            uv run python main.py
+            DEPLOY_DIR=~/LiveJurnalbot
+            if [ ! -d "$DEPLOY_DIR" ]; then
+              git clone https://github.com/Nick-voz/LiveJurnalbot.git "$DEPLOY_DIR"
+            fi
+            cd "$DEPLOY_DIR"
+            git pull origin main
             docker-compose up --build -d

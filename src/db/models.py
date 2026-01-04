@@ -38,7 +38,7 @@ class Scenario(BaseModel):
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
     user_scenarios: Mapped[list["UserScenario"]] = relationship(
-        back_populates="scenario"
+        back_populates="scenario", cascade="all, delete-orphan"
     )
 
 
@@ -64,7 +64,7 @@ class UserScenario(BaseModel):
     reminder_strategy: Mapped["ReminderStrategy"] = relationship(
         back_populates="user_scenarios", lazy="joined"
     )
-    parameters: Mapped[list["Parameter"]] = relationship(back_populates="user_scenario")
+    parameters: Mapped[list["Parameter"]] = relationship(back_populates="user_scenario", cascade="all, delete-orphan")
 
 
 class ReminderStrategy(BaseModel):
@@ -76,7 +76,7 @@ class ReminderStrategy(BaseModel):
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
     user_scenarios: Mapped[list["UserScenario"]] = relationship(
-        back_populates="reminder_strategy"
+        back_populates="reminder_strategy", cascade="all, delete-orphan"
     )
 
 
@@ -92,7 +92,7 @@ class Parameter(BaseModel):
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
     user_scenario: Mapped["UserScenario"] = relationship(back_populates="parameters")
-    records: Mapped[list["Record"]] = relationship(back_populates="parameter")
+    records: Mapped[list["Record"]] = relationship(back_populates="parameter", cascade="all, delete-orphan")
 
 
 class Record(BaseModel):

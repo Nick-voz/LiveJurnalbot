@@ -84,9 +84,9 @@ async def get_value(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     index += 1
     if index < len(parameters):
         context.user_data[UDK.CURRENT_PARAM_INDEX] = index
-        parametr = parameters[index]
-        context.user_data[UDK.PARAMETR] = parametr
-        await update.message.reply_text(f"Send value for parameter: {parametr.name}")
+        parameter = parameters[index]
+        context.user_data[UDK.PARAMETER] = parameter
+        await update.message.reply_text(f"Send value for parameter: {parameter.name}")
         return RecordStates.VALUE
 
     await update.message.reply_text("All values recorded successfully.")

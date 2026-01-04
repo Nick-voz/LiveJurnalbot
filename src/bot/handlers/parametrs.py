@@ -13,16 +13,16 @@ from telegram.ext import filters
 
 from src.bot.constants.commands_text import CMD
 from src.bot.constants.conversation_states import END
-from src.bot.constants.conversation_states import ParametrStates
+from src.bot.constants.conversation_states import ParameterStates
 from src.bot.constants.user_data_keys import UDK
 from src.bot.handlers.base import build_cancel_handler
 from src.bot.handlers.base import build_unexpected_err_handler
 from src.bot.handlers.base import prepare_scenarios_list
 from src.bot.keyboards.parametrs import get_continue_keyboard
 from src.bot.keyboards.scenarios import get_keyboard_scenarios
-from src.db.models import Parametr
+from src.db.models import Parameter
 from src.db.models import UserScenario
-from src.db.repository import find_or_create_parametr
+from src.db.repository import find_or_create_parameter
 from src.db.repository import get_user_scenario_by_id
 from src.db.repository import get_user_scenarios_by_chat
 
@@ -34,18 +34,18 @@ def validate_param_name(text: str) -> str | None:
     return cleaned if cleaned else None
 
 
-def validate_and_set_default_value(text: str, parametr: Parametr) -> bool:
+def validate_and_set_default_value(text: str, parameter: Parameter) -> bool:
     try:
         value = float(text)
         if not 0 <= value <= 1000:
             return False
-        parametr.default_value = value
+        parameter.default_value = value
         return True
     except ValueError:
         return False
 
 
-async def start_create_parametr_conv(update: Update, _) -> int:
+async def start_create_parameter_conv(update: Update, _) -> int:
     user_scenarios = get_user_scenarios_by_chat(chat_id=update.effective_chat.id)
 
     reply_markup = get_keyboard_scenarios(user_scenarios)
@@ -54,18 +54,18 @@ async def start_create_parametr_conv(update: Update, _) -> int:
     return ParametrStates.USER_SCENARIO
 
 
-async def start_direct_parametr_conv(
+async def start_direct_parameter_conv(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> int:
     scenario = context.user_data.get(UDK.USER_SCENARIO_ID)
     if scenario is None:
         await update.message.reply_text(
-            "No scenario selected. Please use /set_parametr first to select a scenario."
+            "No scenario selected. Please use /set_parameter first to select a scenario."
         )
         return END
 
     await update.message.reply_text("Send name for the parameter")
-    return ParametrStates.NAME
+    return ParameterStates.NAME
 
 
 async def choose_user_scenario(
@@ -77,12 +77,12 @@ async def choose_user_scenario(
 
     if user_scenario is None:
         await query.message.reply_text("Scenario not found. Please select again.")
-        return ParametrStates.USER_SCENARIO
+        return ParameterStates.USER_SCENARIO
 
     await query.edit_message_text("Send name for the parameter")
     context.user_data[UDK.USER_SCENARIO_ID] = user_scenario
 
-    return ParametrStates.NAME
+    return ParameterStates.NAME
 
 
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -96,37 +96,37 @@ async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     param_name = validate_param_name(update.message.text)
     if param_name is None:
         await update.message.reply_text("Invalid name. Please enter a non-empty name.")
-        return ParametrStates.NAME
+        return ParameterStates.NAME
 
     await update.message.reply_text("Send default value for the parameter")
 
-    parametr = find_or_create_parametr(scenario, param_name)
-    context.user_data[UDK.PARAMETR] = parametr
+    parameter = find_or_create_parameter(scenario, param_name)
+    context.user_data[UDK.PARAMETER] = parameter
 
-    return ParametrStates.DEFAULT_VALUE
+    return ParameterStates.DEFAULT_VALUE
 
 
 async def get_default_value(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    parametr: Parametr = context.user_data.get(UDK.PARAMETR)
-    if parametr is None:
+    parameter: Parameter = context.user_data.get(UDK.PARAMETER)
+    if parameter is None:
         await update.message.reply_text(
             "An error occurred. Please restart the process."
         )
         return END
 
-    if not validate_and_set_default_value(update.message.text, parametr):
+    if not validate_and_set_default_value(update.message.text, parameter):
         await update.message.reply_text(
             "Invalid value. Please enter a number between 0 and 1000."
         )
-        return ParametrStates.DEFAULT_VALUE
+        return ParameterStates.DEFAULT_VALUE
 
-    parametr.save()
+    parameter.save()
     await update.message.reply_text(
         "Parameter created successfully. Do you want to add another parameter?",
         reply_markup=get_continue_keyboard(),
     )
 
-    return ParametrStates.CONTINUE
+    return ParameterStates.CONTINUE
 
 
 async def handle_continue(update: Update, _) -> int:
@@ -135,21 +135,21 @@ async def handle_continue(update: Update, _) -> int:
 
     if query.data == CMD.CONFIRM:
         await query.edit_message_text("Send name for the parameter")
-        return ParametrStates.NAME
+        return ParameterStates.NAME
     if query.data == CMD.DENY:
         await query.edit_message_text("Parameter creation finished.")
         message, keyboard = prepare_scenarios_list(update.effective_chat.id)
         await update.effective_chat.send_message(message, reply_markup=keyboard)
         return END
     await query.edit_message_text("Invalid choice. Please try again.")
-    return ParametrStates.CONTINUE
+    return ParameterStates.CONTINUE
 
 
 # Builders for individual handlers
 
 
-def build_start_parametr_command_handler():
-    return CommandHandler("set_parametr", start_create_parametr_conv)
+def build_start_parameter_command_handler():
+    return CommandHandler("set_parameter", start_create_parameter_conv)
 
 
 def build_choose_user_scenario_handler():
@@ -170,14 +170,14 @@ def build_continue_handler():
     )
 
 
-def build_parametr_conversation_handler():
+def build_parameter_conversation_handler():
     return ConversationHandler(
-        entry_points=(build_start_parametr_command_handler(),),
+        entry_points=(build_start_parameter_command_handler(),),
         states={
-            ParametrStates.USER_SCENARIO: (build_choose_user_scenario_handler(),),
-            ParametrStates.NAME: (build_name_text_handler(),),
-            ParametrStates.DEFAULT_VALUE: (build_default_value_text_handler(),),
-            ParametrStates.CONTINUE: (build_continue_handler(),),
+            ParameterStates.USER_SCENARIO: (build_choose_user_scenario_handler(),),
+            ParameterStates.NAME: (build_name_text_handler(),),
+            ParameterStates.DEFAULT_VALUE: (build_default_value_text_handler(),),
+            ParameterStates.CONTINUE: (build_continue_handler(),),
         },
         fallbacks=(build_cancel_handler(), build_unexpected_err_handler()),
     )
@@ -190,9 +190,9 @@ def build_direct_conversation_handler(
     return ConversationHandler(
         entry_points=entry_points or [build_name_text_handler()],
         states={
-            ParametrStates.NAME: (build_name_text_handler(),),
-            ParametrStates.DEFAULT_VALUE: (build_default_value_text_handler(),),
-            ParametrStates.CONTINUE: (build_continue_handler(),),
+            ParameterStates.NAME: (build_name_text_handler(),),
+            ParameterStates.DEFAULT_VALUE: (build_default_value_text_handler(),),
+            ParameterStates.CONTINUE: (build_continue_handler(),),
         },
         fallbacks=(build_cancel_handler(), build_unexpected_err_handler()),
         map_to_parent=map_to_parent or {END: END},
@@ -200,4 +200,4 @@ def build_direct_conversation_handler(
 
 
 def register(app: Application):
-    app.add_handler(build_parametr_conversation_handler())
+    app.add_handler(build_parameter_conversation_handler())

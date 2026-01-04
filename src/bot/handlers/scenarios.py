@@ -25,7 +25,7 @@ from src.bot.keyboards.scenarios import get_keyboard_scenario_parameters
 from src.db.repository import create_user_scenario
 from src.db.repository import delete_user_scenario_by_id
 from src.db.repository import get_user_scenario_by_id
-from src.db.repository import get_user_scenario_parametrs
+from src.db.repository import get_user_scenario_parameters
 from src.db.repository import update_user_scenario_name
 
 
@@ -64,7 +64,7 @@ async def show_parameters(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     await update.callback_query.answer()
     scenario_id = context.user_data[UDK.USER_SCENARIO_ID]
     user_scenario = get_user_scenario_by_id(scenario_id)
-    parameters = get_user_scenario_parametrs(user_scenario)
+    parameters = get_user_scenario_parameters(user_scenario)
     reply_text = f"Parameters for scenario '{user_scenario.scenario.name}':"
     reply_markup = get_keyboard_scenario_parameters(parameters)
     await update.callback_query.edit_message_text(reply_text, reply_markup=reply_markup)
@@ -115,17 +115,17 @@ async def fill_scenario(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     await update.callback_query.answer()
     scenario_id = context.user_data[UDK.USER_SCENARIO_ID]
     user_scenario = get_user_scenario_by_id(scenario_id)
-    parametrs = get_user_scenario_parametrs(user_scenario)
-    if not parametrs:
+    parameters = get_user_scenario_parameters(user_scenario)
+    if not parameters:
         await update.callback_query.edit_message_text("No parameters in this scenario.")
         return END
-    context.user_data[UDK.PARAMETERS] = parametrs
+    context.user_data[UDK.PARAMETERS] = parameters
     context.user_data[UDK.CURRENT_PARAM_INDEX] = 0
-    parametr = parametrs[0]
+    parameter = parameters[0]
     await update.callback_query.edit_message_text(
-        f"Send value for parameter: {parametr.name}"
+        f"Send value for parameter: {parameter.name}"
     )
-    context.user_data[UDK.PARAMETR] = parametr
+    context.user_data[UDK.PARAMETER] = parameter
     return RecordStates.VALUE
 
 

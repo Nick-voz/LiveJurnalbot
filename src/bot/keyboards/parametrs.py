@@ -4,18 +4,18 @@ from telegram import InlineKeyboardButton
 from telegram import InlineKeyboardMarkup
 
 from src.bot.constants.commands_text import CMD
-from src.db.models import Parametr
+from src.db.models import Parameter
 
 
-def get_keyboard_parametrs(
-    parametrs: Iterable[Parametr],
+def get_keyboard_parameters(
+    parameters: Iterable[Parameter],
 ) -> InlineKeyboardMarkup:
-    keybord = []
-    for e in parametrs:
+    keyboard = []
+    for e in parameters:
         name = e.name
-        keybord.append((InlineKeyboardButton(f"{name}", callback_data=name),))
+        keyboard.append((InlineKeyboardButton(f"{name}", callback_data=name),))
 
-    return InlineKeyboardMarkup(keybord)
+    return InlineKeyboardMarkup(keyboard)
 
 
 def get_continue_keyboard() -> InlineKeyboardMarkup:

@@ -17,10 +17,10 @@ from src.bot.handlers.base import build_cancel_handler
 from src.bot.handlers.base import build_unexpected_err_handler
 from src.bot.keyboards.scenarios import get_keyboard_scenario_options
 from src.bot.keyboards.scenarios import get_keyboard_scenarios
-from src.db.models import Parametr
+from src.db.models import Parameter
 from src.db.models import Record
 from src.db.repository import get_user_scenario_by_id
-from src.db.repository import get_user_scenario_parametrs
+from src.db.repository import get_user_scenario_parameters
 from src.db.repository import get_user_scenarios_by_chat
 
 # Core async handlers (unchanged logic)
@@ -45,24 +45,24 @@ async def choose_user_scenario(
     if user_scenario is None:
         return RecordStates.USER_SCENARIO
 
-    parametrs = get_user_scenario_parametrs(user_scenario)
-    if not parametrs:
+    parameters = get_user_scenario_parameters(user_scenario)
+    if not parameters:
         await query.edit_message_text("No parameters in this scenario.")
         return END
 
     context.user_data[UDK.USER_SCENARIO_ID] = user_scenario
-    context.user_data[UDK.PARAMETERS] = parametrs
+    context.user_data[UDK.PARAMETERS] = parameters
     context.user_data[UDK.CURRENT_PARAM_INDEX] = 0
-    parametr = parametrs[0]
-    await query.edit_message_text(f"Send value for parameter: {parametr.name}")
-    context.user_data[UDK.PARAMETR] = parametr
+    parameter = parameters[0]
+    await query.edit_message_text(f"Send value for parameter: {parameter.name}")
+    context.user_data[UDK.PARAMETER] = parameter
     return RecordStates.VALUE
 
 
 async def get_value(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    parametr: Parametr = context.user_data.get(UDK.PARAMETR)
+    parameter: Parameter = context.user_data.get(UDK.PARAMETER)
     record = Record(
-        parameter_id=parametr.id, datetime=datetime.now(tz=ZoneInfo("Europe/Moscow"))
+        parameter_id=parameter.id, datetime=datetime.now(tz=ZoneInfo("Europe/Moscow"))
     )
 
     try:

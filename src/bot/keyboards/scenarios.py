@@ -5,7 +5,7 @@ from telegram import InlineKeyboardButton
 from telegram import InlineKeyboardMarkup
 
 from src.bot.constants.commands_text import CMD
-from src.db.models import Parametr
+from src.db.models import Parameter
 from src.db.models import UserScenario
 
 
@@ -64,7 +64,7 @@ def get_keyboard_delete_confirmation() -> InlineKeyboardMarkup:
 
 
 def get_keyboard_scenario_parameters(
-    parameters: Iterable[Parametr],
+    parameters: Iterable[Parameter],
 ) -> InlineKeyboardMarkup:
     keyboard = []
     for batch in batched(parameters, 3):

@@ -3,7 +3,7 @@ from typing import Iterable
 from sqlalchemy import Select
 from sqlalchemy.orm import Session
 
-from src.db.models import Parametr
+from src.db.models import Parameter
 from src.db.models import ReminderStrategy
 from src.db.models import Scenario
 from src.db.models import User
@@ -108,10 +108,10 @@ def get_user_scenario_by_id(_id: int) -> UserScenario:
 
 def create_reminder_strategy(user_scenario: UserScenario) -> ReminderStrategy:
     strategy = ReminderStrategy()
-    user_scenario.reminde_strategy = strategy
+    user_scenario.reminder_strategy = strategy
     with Session(engine) as s:
         s.add_all((strategy, user_scenario))
-        user_scenario.reminde_strategy = strategy
+        user_scenario.reminder_strategy = strategy
         s.commit()
 
     return find_or_create_reminder_strategy(user_scenario)
@@ -133,37 +133,37 @@ def find_or_create_reminder_strategy(user_scenario: UserScenario) -> ReminderStr
     return strategy
 
 
-def create_parametr(user_scenario: UserScenario, name: str) -> UserScenario:
-    parametr = Parametr(name=name, user_scenario_id=user_scenario.id)
+def create_parameter(user_scenario: UserScenario, name: str) -> UserScenario:
+    parameter = Parameter(name=name, user_scenario_id=user_scenario.id)
     with Session(engine) as s:
-        s.add(parametr)
+        s.add(parameter)
         s.commit()
 
 
-def find_or_create_parametr(user_scenario: UserScenario, name: str) -> Parametr:
+def find_or_create_parameter(user_scenario: UserScenario, name: str) -> Parameter:
     selector = (
-        Select(Parametr)
+        Select(Parameter)
         .join(UserScenario)
-        .where(Parametr.user_scenario_id == UserScenario.id)
-        .where(Parametr.name == name)
+        .where(Parameter.user_scenario_id == UserScenario.id)
+        .where(Parameter.name == name)
     )
     with Session(engine) as s:
-        parametr = s.scalars(selector).one_or_none()
+        parameter = s.scalars(selector).one_or_none()
 
-    if parametr is None:
-        create_parametr(user_scenario, name)
-        return find_or_create_parametr(user_scenario, name)
+    if parameter is None:
+        create_parameter(user_scenario, name)
+        return find_or_create_parameter(user_scenario, name)
 
-    return parametr
+    return parameter
 
 
-def get_user_scenario_parametrs(user_scenario: UserScenario) -> Iterable[Parametr]:
-    selector = Select(Parametr).where(Parametr.user_scenario_id == user_scenario.id)
+def get_user_scenario_parameters(user_scenario: UserScenario) -> Iterable[Parameter]:
+    selector = Select(Parameter).where(Parameter.user_scenario_id == user_scenario.id)
 
     with Session(engine) as s:
-        parametrs = s.scalars(selector).all()
+        parameters = s.scalars(selector).all()
 
-    return parametrs
+    return parameters
 
 
 def update_user_scenario_name(user_scenario_id: int, new_name: str) -> None:

@@ -3,7 +3,7 @@ line-length = 88
 experimental-string-processing = true
 
 [tool.isort]
-line_length = 88
+line_length = 79
 multi_line_output = 3
 force_single_line = true
 

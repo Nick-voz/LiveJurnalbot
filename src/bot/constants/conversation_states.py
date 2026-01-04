@@ -17,7 +17,7 @@ class ReminderStrategyStates(IntEnum):
     SHIFT = auto()
 
 
-class ParametrStates(IntEnum):
+class ParameterStates(IntEnum):
     USER_SCENARIO = auto()
     NAME = auto()
     DEFAULT_VALUE = auto()
@@ -26,7 +26,7 @@ class ParametrStates(IntEnum):
 
 class RecordStates(IntEnum):
     USER_SCENARIO = auto()
-    PARAMETR = auto()
+    PARAMETER = auto()
     VALUE = auto()
 
 

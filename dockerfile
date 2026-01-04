@@ -6,8 +6,9 @@ RUN pip install --no-cache-dir uv==0.6.6
 COPY pyproject.toml uv.lock  ./
 RUN uv sync
 
+COPY alembic.ini ./
 COPY .env main.py ./
-COPY src ./src
+COPY src ./src 
 
 EXPOSE 80
 

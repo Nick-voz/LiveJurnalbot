@@ -80,8 +80,17 @@ def upgrade() -> None:
     # Rename table parametrs to parameters
     op.rename_table("parametrs", "parameters")
 
-    # Drop old unique constraint on user_scenarios.scenario_id
-    op.drop_constraint("scenario_id", "user_scenarios", type_="unique")
+    # Drop old unique constraint on user_scenarios.scenario_id if it exists
+    # Check if constraint exists before dropping
+    conn = op.get_bind()
+    result = conn.execute(sa.text("""
+        SELECT conname FROM pg_constraint
+        WHERE conrelid = 'user_scenarios'::regclass
+        AND conname = 'scenario_id'
+        AND contype = 'u'
+    """))
+    if result.fetchone():
+        op.drop_constraint("scenario_id", "user_scenarios", type_="unique")
     # Add new unique constraint on (user_id, scenario_id)
     op.create_unique_constraint(
         "user_scenarios_user_id_scenario_id_key",

@@ -49,7 +49,7 @@ async def get_my_scenarios(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 async def back(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    update.callback_query.answer()
+    await update.callback_query.answer()
     await send_menu(update, context)
     return END
 

@@ -4,6 +4,7 @@ from sqlalchemy import Select
 from sqlalchemy.orm import Session
 
 from src.db.models import Parameter
+from src.db.models import Record
 from src.db.models import ReminderStrategy
 from src.db.models import Scenario
 from src.db.models import User
@@ -181,3 +182,21 @@ def delete_user_scenario_by_id(scenario_id):
         if user_scenario:
             s.delete(user_scenario)
             s.commit()
+
+
+def update_parameter_default_value(parameter: Parameter):
+    with Session(engine) as s:
+        s.add(parameter)
+        s.commit()
+
+
+def save_record(record: Record):
+    with Session(engine) as s:
+        s.add(record)
+        s.commit()
+
+
+def update_reminder_strategy(strategy: ReminderStrategy):
+    with Session(engine) as s:
+        s.add(strategy)
+        s.commit()

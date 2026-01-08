@@ -1,6 +1,5 @@
 from typing import Any
 
-from sqlalchemy.orm import Session
 from telegram import Update
 from telegram.ext import Application
 from telegram.ext import BaseHandler
@@ -18,13 +17,12 @@ from src.bot.constants.user_data_keys import UDK
 from src.bot.handlers.base import build_cancel_handler
 from src.bot.handlers.base import build_unexpected_err_handler
 from src.bot.handlers.base import prepare_scenarios_list
+from src.bot.handlers.base import start_scenario_selection
 from src.bot.keyboards.parametrs import get_continue_keyboard
-from src.bot.keyboards.scenarios import get_keyboard_scenarios
 from src.db.models import Parameter
-from src.db.models import engine
 from src.db.repository import find_or_create_parameter
 from src.db.repository import get_user_scenario_by_id
-from src.db.repository import get_user_scenarios_by_chat
+from src.db.repository import update_parameter_default_value
 
 # Utility functions
 
@@ -34,22 +32,11 @@ def validate_param_name(text: str) -> str | None:
     return cleaned if cleaned else None
 
 
-def validate_and_set_default_value(text: str, parameter: Parameter) -> bool:
-    try:
-        value = text
-        parameter.default_value = value
-        return True
-    except ValueError:
-        return False
+
 
 
 async def start_create_parameter_conv(update: Update, _) -> int:
-    user_scenarios = get_user_scenarios_by_chat(chat_id=update.effective_chat.id)
-
-    reply_markup = get_keyboard_scenarios(user_scenarios)
-
-    await update.message.reply_text("Select scenario", reply_markup=reply_markup)
-    return ParameterStates.USER_SCENARIO
+    return await start_scenario_selection(update, _, ParameterStates.USER_SCENARIO)
 
 
 async def start_direct_parameter_conv(
@@ -113,15 +100,8 @@ async def get_default_value(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         )
         return END
 
-    if not validate_and_set_default_value(update.message.text, parameter):
-        await update.message.reply_text(
-            "Invalid value. Please enter a number between 0 and 1000."
-        )
-        return ParameterStates.DEFAULT_VALUE
-
-    with Session(engine) as s:
-        s.add(parameter)
-        s.commit()
+    parameter.default_value = update.message.text
+    update_parameter_default_value(parameter)
     await update.message.reply_text(
         "Parameter created successfully. Do you want to add another parameter?",
         reply_markup=get_continue_keyboard(),

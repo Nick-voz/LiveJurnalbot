@@ -13,21 +13,15 @@ from src.bot.constants.conversation_states import ReminderStrategyStates
 from src.bot.constants.user_data_keys import UDK
 from src.bot.handlers.base import build_cancel_handler
 from src.bot.handlers.base import build_unexpected_err_handler
-from src.bot.keyboards.scenarios import get_keyboard_scenarios
-from sqlalchemy.orm import Session
-
+from src.bot.handlers.base import start_scenario_selection
 from src.db.models import ReminderStrategy
-from src.db.models import engine
 from src.db.repository import find_or_create_reminder_strategy
 from src.db.repository import find_user_scenario_by_name
-from src.db.repository import get_user_scenarios_by_chat
+from src.db.repository import update_reminder_strategy
 
 
 async def start_reminder_strategy_conv(update: Update, _) -> int:
-    user_scenarios = get_user_scenarios_by_chat(chat_id=update.effective_chat.id)
-    reply_markup = get_keyboard_scenarios(user_scenarios)
-    await update.message.reply_text("Select scenario", reply_markup=reply_markup)
-    return ReminderStrategyStates.USER_SCENARIO
+    return await start_scenario_selection(update, _, ReminderStrategyStates.USER_SCENARIO)
 
 
 async def choose_user_scenario(
@@ -79,9 +73,7 @@ async def get_shift(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     except ValueError:
         return ReminderStrategyStates.SHIFT
 
-    with Session(engine) as s:
-        s.add(strategy)
-        s.commit()
+    update_reminder_strategy(strategy)
     await update.message.reply_text("success")
 
     return END

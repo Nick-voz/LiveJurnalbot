@@ -15,6 +15,7 @@ from src.bot.handlers.scenario_options import build_back_to_scenarios_handler
 from src.bot.handlers.scenario_options import build_choose_scenario_handler
 from src.bot.handlers.scenario_parameters import build_choose_parameter_handler
 from src.bot.handlers.scenario_parameters import build_show_parameters_handler
+from src.bot.handlers.scenarios_list import build_back_to_menu_handler
 from src.bot.handlers.scenarios_list import build_get_my_scenarios_handler
 from src.db.repository import create_user
 from src.db.repository import get_user_by_chat
@@ -50,16 +51,21 @@ def build_menu_command_handler():
 
 def register(app: Application):
     app.add_handler(CommandHandler(CMD.START, start))
-    app.add_handler(build_menu_command_handler())
-    app.add_handler(build_get_my_scenarios_handler())
-    app.add_handler(build_choose_scenario_handler())
-    app.add_handler(build_back_to_scenarios_handler())
-    app.add_handler(build_show_parameters_handler())
-    app.add_handler(build_back_to_options_handler())
-    app.add_handler(build_choose_parameter_handler())
-    app.add_handler(build_fill_scenario_handler())
-    app.add_handler(build_delete_scenario_handler())
-    app.add_handler(build_rename_scenario_handler())
-    app.add_handler(build_create_scenario_handler())
-    app.add_handler(build_cancel_handler())
-    app.add_handler(build_unexpected_err_handler())
+    app.add_handlers(
+        [
+            build_menu_command_handler(),
+            build_back_to_menu_handler(),
+            build_get_my_scenarios_handler(),
+            build_choose_scenario_handler(),
+            build_back_to_scenarios_handler(),
+            build_show_parameters_handler(),
+            build_back_to_options_handler(),
+            build_choose_parameter_handler(),
+            build_fill_scenario_handler(),
+            build_delete_scenario_handler(),
+            build_rename_scenario_handler(),
+            build_create_scenario_handler(),
+            build_cancel_handler(),
+            build_unexpected_err_handler(),
+        ]
+    )

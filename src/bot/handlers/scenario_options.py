@@ -4,20 +4,14 @@ from telegram.ext import ContextTypes
 
 from src.bot.constants.commands_text import CMD
 from src.bot.constants.user_data_keys import UDK
+from src.bot.handlers.base import display_scenario_options
 from src.bot.handlers.scenarios_list import send_scenarios_list
-from src.bot.keyboards.scenarios import get_keyboard_scenario_options
-from src.db.repository import get_user_scenario_by_id
 
 
 async def choose_scenario(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     scenario_id = int(update.callback_query.data)
     context.user_data[UDK.USER_SCENARIO_ID] = scenario_id
-    scenario = get_user_scenario_by_id(scenario_id)
-
-    reply_text = f"Chose option for scenario: {scenario.scenario.name}"
-    reply_markup = get_keyboard_scenario_options()
-    await update.callback_query.edit_message_text(reply_text, reply_markup=reply_markup)
-
+    await display_scenario_options(update, context, scenario_id)
     await update.callback_query.answer()
 
 
@@ -29,10 +23,7 @@ async def back_to_scenarios(update: Update, _: ContextTypes.DEFAULT_TYPE) -> Non
 async def back_to_options(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.callback_query.answer()
     scenario_id = context.user_data[UDK.USER_SCENARIO_ID]
-    scenario = get_user_scenario_by_id(scenario_id)
-    reply_text = f"Chose option for scenario: {scenario.scenario.name}"
-    reply_markup = get_keyboard_scenario_options()
-    await update.callback_query.edit_message_text(reply_text, reply_markup=reply_markup)
+    await display_scenario_options(update, context, scenario_id)
 
 
 # Builders for handlers

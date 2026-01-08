@@ -7,7 +7,9 @@ from telegram.ext import filters
 
 from src.bot.constants.commands_text import CMD
 from src.bot.constants.conversation_states import END
+from src.bot.keyboards.scenarios import get_keyboard_scenario_options
 from src.bot.keyboards.scenarios import get_keyboard_scenarios
+from src.db.repository import get_user_scenario_by_id
 from src.db.repository import get_user_scenarios_by_chat
 
 
@@ -48,3 +50,26 @@ def build_unexpected_err_handler() -> MessageHandler:
 
 def build_cancel_handler() -> CommandHandler:
     return CommandHandler(CMD.CANCEL, cancel)
+
+
+async def start_scenario_selection(
+    update: Update,
+    _,
+    return_state: int,
+    message: str = "Select scenario",
+) -> int:
+    user_scenarios = get_user_scenarios_by_chat(chat_id=update.effective_chat.id)
+    reply_markup = get_keyboard_scenarios(user_scenarios)
+    await update.message.reply_text(message, reply_markup=reply_markup)
+    return return_state
+
+
+async def display_scenario_options(
+    update: Update,
+    _,
+    scenario_id: int,
+) -> None:
+    scenario = get_user_scenario_by_id(scenario_id)
+    reply_text = f"Chose option for scenario: {scenario.scenario.name}"
+    reply_markup = get_keyboard_scenario_options()
+    await update.callback_query.edit_message_text(reply_text, reply_markup=reply_markup)

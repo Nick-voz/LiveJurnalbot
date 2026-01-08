@@ -21,7 +21,6 @@ from src.bot.handlers.base import prepare_scenarios_list
 from src.bot.keyboards.parametrs import get_continue_keyboard
 from src.bot.keyboards.scenarios import get_keyboard_scenarios
 from src.db.models import Parameter
-from src.db.models import UserScenario
 from src.db.models import engine
 from src.db.repository import find_or_create_parameter
 from src.db.repository import get_user_scenario_by_id
@@ -85,12 +84,13 @@ async def choose_user_scenario(
 
 
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    scenario: UserScenario = context.user_data.get(UDK.USER_SCENARIO_ID)
-    if scenario is None:
+    scenario_id: int = context.user_data.get(UDK.USER_SCENARIO_ID, None)
+    if scenario_id is None:
         await update.message.reply_text(
             "An error occurred. Please restart the process."
         )
         return END
+    scenario = get_user_scenario_by_id(scenario_id)
 
     param_name = validate_param_name(update.message.text)
     if param_name is None:

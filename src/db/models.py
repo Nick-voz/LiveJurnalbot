@@ -67,6 +67,9 @@ class UserScenario(BaseModel):
     parameters: Mapped[list["Parameter"]] = relationship(
         back_populates="user_scenario", cascade="all, delete-orphan"
     )
+    records: Mapped[list["Record"]] = relationship(
+        back_populates="user_scenario", cascade="all, delete-orphan"
+    )
 
 
 class ReminderStrategy(BaseModel):
@@ -94,7 +97,7 @@ class Parameter(BaseModel):
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
     user_scenario: Mapped["UserScenario"] = relationship(back_populates="parameters")
-    records: Mapped[list["Record"]] = relationship(
+    values: Mapped[list["Value"]] = relationship(
         back_populates="parameter", cascade="all, delete-orphan"
     )
 
@@ -102,15 +105,31 @@ class Parameter(BaseModel):
 class Record(BaseModel):
     __tablename__ = "records"
     id: Mapped[int] = mapped_column(primary_key=True)
+    user_scenario_id: Mapped[int] = mapped_column(
+        ForeignKey("user_scenarios.id", ondelete="CASCADE"), nullable=False
+    )
+    created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), nullable=False)
+    user_scenario: Mapped["UserScenario"] = relationship(back_populates="records")
+    values: Mapped[list["Value"]] = relationship(
+        back_populates="record", cascade="all, delete-orphan"
+    )
+
+
+class Value(BaseModel):
+    __tablename__ = "values"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    record_id: Mapped[int] = mapped_column(
+        ForeignKey("records.id", ondelete="CASCADE"), nullable=False
+    )
+    value: Mapped[str] = mapped_column(String(150), nullable=False)
     parameter_id: Mapped[int] = mapped_column(
         ForeignKey("parameters.id", ondelete="CASCADE"), nullable=False
     )
-    value: Mapped[str] = mapped_column(String(150), nullable=False)
-    datetime: Mapped[DateTime] = mapped_column(DateTime(timezone=True), nullable=False)
     created_at: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
-    parameter: Mapped["Parameter"] = relationship(back_populates="records")
+    record: Mapped["Record"] = relationship(back_populates="values")
+    parameter: Mapped["Parameter"] = relationship(back_populates="values")
 
 
 # pylint: enable={E1136}

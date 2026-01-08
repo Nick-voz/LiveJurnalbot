@@ -9,6 +9,7 @@ from src.db.models import ReminderStrategy
 from src.db.models import Scenario
 from src.db.models import User
 from src.db.models import UserScenario
+from src.db.models import Value
 from src.db.models import engine
 
 
@@ -190,10 +191,20 @@ def update_parameter_default_value(parameter: Parameter):
         s.commit()
 
 
-def save_record(record: Record):
+def save_record(record: Record) -> Record:
     with Session(engine) as s:
         s.add(record)
         s.commit()
+        s.refresh(record)
+    return record
+
+
+def save_value(value: Value) -> Value:
+    with Session(engine) as s:
+        s.add(value)
+        s.commit()
+        s.refresh(value)
+    return value
 
 
 def update_reminder_strategy(strategy: ReminderStrategy):

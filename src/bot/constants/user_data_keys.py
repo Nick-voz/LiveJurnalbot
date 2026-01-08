@@ -8,3 +8,4 @@ class UDK(IntEnum):
     REMINDER_STRATEGY = auto()
     PARAMETERS = auto()
     CURRENT_PARAM_INDEX = auto()
+    RECORD_ID = auto()

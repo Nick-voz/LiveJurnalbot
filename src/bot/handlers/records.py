@@ -1,6 +1,7 @@
 from zoneinfo import ZoneInfo
 
 from datetime import datetime
+from sqlalchemy.orm import Session
 from telegram import Update
 from telegram.ext import CallbackQueryHandler
 from telegram.ext import CommandHandler
@@ -17,8 +18,6 @@ from src.bot.handlers.base import build_cancel_handler
 from src.bot.handlers.base import build_unexpected_err_handler
 from src.bot.keyboards.scenarios import get_keyboard_scenario_options
 from src.bot.keyboards.scenarios import get_keyboard_scenarios
-from sqlalchemy.orm import Session
-
 from src.db.models import Parameter
 from src.db.models import Record
 from src.db.models import engine
@@ -69,7 +68,7 @@ async def get_value(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     )
 
     try:
-        record.value = float(update.message.text)
+        record.value = update.message.text
     except ValueError:
         await update.message.reply_text("can not recognize value, try again")
         return RecordStates.VALUE

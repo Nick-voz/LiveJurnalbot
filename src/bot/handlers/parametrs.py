@@ -1,6 +1,6 @@
 from typing import Any
 
-from sqlalchemy.orm import keyfunc_mapping
+from sqlalchemy.orm import Session
 from telegram import Update
 from telegram.ext import Application
 from telegram.ext import BaseHandler
@@ -20,8 +20,6 @@ from src.bot.handlers.base import build_unexpected_err_handler
 from src.bot.handlers.base import prepare_scenarios_list
 from src.bot.keyboards.parametrs import get_continue_keyboard
 from src.bot.keyboards.scenarios import get_keyboard_scenarios
-from sqlalchemy.orm import Session
-
 from src.db.models import Parameter
 from src.db.models import UserScenario
 from src.db.models import engine
@@ -39,9 +37,7 @@ def validate_param_name(text: str) -> str | None:
 
 def validate_and_set_default_value(text: str, parameter: Parameter) -> bool:
     try:
-        value = float(text)
-        if not 0 <= value <= 1000:
-            return False
+        value = text
         parameter.default_value = value
         return True
     except ValueError:
@@ -54,7 +50,7 @@ async def start_create_parameter_conv(update: Update, _) -> int:
     reply_markup = get_keyboard_scenarios(user_scenarios)
 
     await update.message.reply_text("Select scenario", reply_markup=reply_markup)
-    return ParametrStates.USER_SCENARIO
+    return ParameterStates.USER_SCENARIO
 
 
 async def start_direct_parameter_conv(

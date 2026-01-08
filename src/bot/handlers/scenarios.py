@@ -81,11 +81,16 @@ async def back_to_options(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     return ScenariosList.OPTION
 
 
-async def choose_parameter(update: Update, _: ContextTypes.DEFAULT_TYPE) -> int:
+async def choose_parameter(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     await update.callback_query.answer()
-    # For now, just do nothing, or perhaps show parameter details
-    await update.callback_query.edit_message_text("Parameter selected (no action yet)")
-    return END
+    await update.callback_query.edit_message_text("Not implemented yet.")
+    scenario_id = context.user_data[UDK.USER_SCENARIO_ID]
+    user_scenario = get_user_scenario_by_id(scenario_id)
+    parameters = get_user_scenario_parameters(user_scenario)
+    reply_text = f"Parameters for scenario '{user_scenario.scenario.name}':"
+    reply_markup = get_keyboard_scenario_parameters(parameters)
+    await update.effective_chat.send_message(reply_text, reply_markup=reply_markup)
+    return ScenariosList.PARAMETERS
 
 
 async def choose_scenario(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:

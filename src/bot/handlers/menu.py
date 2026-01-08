@@ -8,6 +8,7 @@ from src.bot.handlers.base import build_unexpected_err_handler
 from src.bot.handlers.base import send_menu
 from src.bot.handlers.create_scenario import build_create_scenario_handler
 from src.bot.handlers.delete_scenario import build_delete_scenario_handler
+from src.bot.handlers.export_scenario import build_export_scenario_handler
 from src.bot.handlers.fill_scenario import build_fill_scenario_handler
 from src.bot.handlers.rename_scenario import build_rename_scenario_handler
 from src.bot.handlers.scenario_options import build_back_to_options_handler
@@ -64,6 +65,7 @@ def register(app: Application):
             build_fill_scenario_handler(),
             build_delete_scenario_handler(),
             build_rename_scenario_handler(),
+            build_export_scenario_handler(),
             build_create_scenario_handler(),
             build_cancel_handler(),
             build_unexpected_err_handler(),

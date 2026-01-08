@@ -14,3 +14,4 @@ class CMD:
     BACK_TO_SCENARIOS = "back_to_scenarios"
     SHOW_PARAMETERS = "show_parameters"
     BACK_TO_OPTIONS = "back_to_options"
+    EXPORT_SCENARIO = "export_scenario"

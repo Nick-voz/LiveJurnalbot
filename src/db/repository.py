@@ -2,6 +2,7 @@ from typing import Iterable
 
 from sqlalchemy import Select
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import joinedload
 
 from src.db.models import Parameter
 from src.db.models import Record
@@ -211,3 +212,15 @@ def update_reminder_strategy(strategy: ReminderStrategy):
     with Session(engine) as s:
         s.add(strategy)
         s.commit()
+
+
+def get_scenario_values(user_scenario_id: int) -> list[Value]:
+    selector = (
+        Select(Value)
+        .join(Value.parameter)
+        .join(Value.record)
+        .where(Parameter.user_scenario_id == user_scenario_id)
+        .options(joinedload(Value.parameter), joinedload(Value.record))
+    )
+    with Session(engine) as s:
+        return s.scalars(selector).all()

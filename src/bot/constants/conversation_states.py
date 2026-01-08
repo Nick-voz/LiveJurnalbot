@@ -41,3 +41,7 @@ class ScenariosList(IntEnum):
     DELETE_CONFIRM = auto()
     RENAME = auto()
     PARAMETERS = auto()
+
+
+class ExportScenario(IntEnum):
+    FILE_TYPE = auto()

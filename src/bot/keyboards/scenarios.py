@@ -5,6 +5,7 @@ from telegram import InlineKeyboardButton
 from telegram import InlineKeyboardMarkup
 
 from src.bot.constants.commands_text import CMD
+from src.bot.constants.export_file_types import ExportFileTypes
 from src.db.models import Parameter
 from src.db.models import UserScenario
 
@@ -45,6 +46,9 @@ def get_keyboard_scenario_options() -> InlineKeyboardMarkup:
         ],
         [
             InlineKeyboardButton("Rename", callback_data=CMD.RENAME_SCENARIO),
+            InlineKeyboardButton("Export", callback_data=CMD.EXPORT_SCENARIO),
+        ],
+        [
             InlineKeyboardButton("Back", callback_data=CMD.BACK_TO_SCENARIOS),
         ],
     ]
@@ -79,3 +83,15 @@ def get_keyboard_scenario_parameters(
     keyboard.append([InlineKeyboardButton("Back", callback_data=CMD.BACK_TO_OPTIONS)])
 
     return InlineKeyboardMarkup(keyboard)
+
+
+def get_keyboard_export_file_types() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    ExportFileTypes.CSV.value, callback_data=ExportFileTypes.CSV
+                )
+            ]
+        ]
+    )
